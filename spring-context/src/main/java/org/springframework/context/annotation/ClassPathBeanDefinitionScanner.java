@@ -59,6 +59,11 @@ import org.springframework.util.PatternMatchUtils;
  * @see org.springframework.stereotype.Repository
  * @see org.springframework.stereotype.Service
  * @see org.springframework.stereotype.Controller
+ *
+ * ClassPathBeanDefinitionScanner是一个扫描指定类路径中注解Bean定义的扫描器，在它初始化的时候，会初始化一些需要被扫描的注解，初始化用于加载包下的资源的Loader。
+ *
+ * ClassPathBeanDefinitionScanner继承于ClassPathScanningCandidateComponentProvider，
+ * 它内部维护有两个final类型的List：这两个对象在执行本类的scanCandidateComponents()方法时就会起作用。
  */
 public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateComponentProvider {
 
@@ -162,10 +167,15 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 		this.registry = registry;
 
+		//useDefaultFilters为true，所以此处一般都会执行
+		// 当然我们也可以设置为false，比如@ComponentScan里就可以设置为false，只扫描指定的注解/类等等
 		if (useDefaultFilters) {
+			// 注册默认的过滤规则
 			registerDefaultFilters();
 		}
+		// 设置环境
 		setEnvironment(environment);
+		// 详情如下：  这里resourceLoader传值，还是我们的工厂。否则为null
 		setResourceLoader(resourceLoader);
 	}
 
@@ -246,14 +256,17 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	/**
 	 * Perform a scan within the specified base packages.
 	 * @param basePackages the packages to check for annotated classes
-	 * @return number of beans registered
+	 * @return number of beans registered 注册成功的Bean个数
 	 */
 	public int scan(String... basePackages) {
+		// 就是AnnotatedBeanDefinitionReader初始化时注册的那几个BeanProcessors
 		int beanCountAtScanStart = this.registry.getBeanDefinitionCount();
 
+		// 根据包扫描Bean定义
 		doScan(basePackages);
 
 		// Register annotation config processors, if necessary.
+		// 默认值是true，也是去注册AnnotatedBeanDefinitionReader初始化时注册的那几个BeanProcessors
 		if (this.includeAnnotationConfig) {
 			AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
 		}
@@ -271,24 +284,40 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 */
 	protected Set<BeanDefinitionHolder> doScan(String... basePackages) {
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
+		// 装载扫描到的Bean
 		Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<>();
 		for (String basePackage : basePackages) {
+			// 这个方法是最重点，把扫描到的Bean就放进来了（比如此处只有RootConfig一个Bean定义，是个配置类）
+			// 这个是重点，会把该包下面所有的Bean都扫描进去。Spring5和一下的处理方式不一样哦~
 			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
 			for (BeanDefinition candidate : candidates) {
+				// 拿到Scope元数据：此处为singleton
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
 				candidate.setScope(scopeMetadata.getScopeName());
+				// 生成Bean的名称，默认为首字母小写。此处为"rootConfig"
 				String beanName = this.beanNameGenerator.generateBeanName(candidate, this.registry);
+				// 此处为扫描的Bean，为ScannedGenericBeanDefinition，所以肯定为true
+				// 因此进来，执行postProcessBeanDefinition（对Bean定义信息做）   如下详解
+				// 注意：只是添加些默认的Bean定义信息，并不是执行后置处理器~~~
 				if (candidate instanceof AbstractBeanDefinition) {
 					postProcessBeanDefinition((AbstractBeanDefinition) candidate, beanName);
 				}
+				// 显然，此处也是true  也是完善比如Bean上的一些注解信息：比如@Lazy、@Primary、@DependsOn、@Role、@Description
+				// @Role注解用于Bean的分类分组，没有太大的作用
 				if (candidate instanceof AnnotatedBeanDefinition) {
 					AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
 				}
+				// 检查这个Bean  比如
+				// 如果dao包（一般配置的basePackage是这个）下的类是符合mybaits要求的则向spring IOC容器中注册它的BeanDefinition
+				// 所以这步检查第三方Bean的时候有必要检查一下
 				if (checkCandidate(beanName, candidate)) {
+					//AnnotationConfigUtils类的applyScopedProxyMode方法根据注解Bean定义类中配置的作用域@Scope注解的值，为Bean定义应用相应的代理模式，
+					// 主要是在Spring面向切面编程(AOP)中使用
 					BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(candidate, beanName);
 					definitionHolder =
 							AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 					beanDefinitions.add(definitionHolder);
+					// 注意 注意 注意：这里已经吧Bean注册进去工厂了，所有doScan()方法不接收返回值，也是没有任何问题的。。。。
 					registerBeanDefinition(definitionHolder, this.registry);
 				}
 			}
@@ -303,7 +332,10 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 * @param beanName the generated bean name for the given bean
 	 */
 	protected void postProcessBeanDefinition(AbstractBeanDefinition beanDefinition, String beanName) {
+		// 位Bean定义 执行些默认的信息
+		// BeanDefinitionDefaults是个标准的javaBean，有一些默认值
 		beanDefinition.applyDefaults(this.beanDefinitionDefaults);
+		// 自动依赖注入 匹配路径（此处为null，不进来）
 		if (this.autowireCandidatePatterns != null) {
 			beanDefinition.setAutowireCandidate(PatternMatchUtils.simpleMatch(this.autowireCandidatePatterns, beanName));
 		}

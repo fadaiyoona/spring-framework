@@ -54,6 +54,11 @@ import org.springframework.lang.Nullable;
  * @see DestructionAwareBeanPostProcessor
  * @see ConfigurableBeanFactory#addBeanPostProcessor
  * @see BeanFactoryPostProcessor
+ *
+ * 实例化：实例化的过程是一个创建Bean的过程，即调用Bean的构造函数，单例的Bean放入单例池中
+ * 初始化：初始化的过程是一个赋值的过程，即调用Bean的setter，设置Bean的属性
+ *
+ * Bean初始化前后执行在Bean实例化/依赖注入完毕以及自定义的初始化方法前后调用
  */
 public interface BeanPostProcessor {
 
@@ -69,6 +74,11 @@ public interface BeanPostProcessor {
 	 * if {@code null}, no subsequent BeanPostProcessors will be invoked
 	 * @throws org.springframework.beans.BeansException in case of errors
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet
+	 *
+	 * 在Bean实例化/依赖注入完毕以及自定义的初始化方法之前调用。
+	 * 什么叫自定义初始化方法：比如init-method、比如@PostConstruct标、比如实现InitailztingBean接口的方法等等
+	 * @param bean 这个Bean实例
+	 * @param beanName bean名称
 	 */
 	@Nullable
 	default Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
@@ -95,6 +105,12 @@ public interface BeanPostProcessor {
 	 * @throws org.springframework.beans.BeansException in case of errors
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet
 	 * @see org.springframework.beans.factory.FactoryBean
+	 *
+	 * 在上面基础上，初始化方法之后调用
+	 * @see org.springframework.context.support.ApplicationListenerDetector#postProcessAfterInitialization(java.lang.Object, java.lang.String)
+	 * ApplicationListenerDetector重点实现了postProcessAfterInitialization方法：
+	 * 测那些实现了接口ApplicationListener的bean，在它们创建时初始化之后，将它们添加到应用上下文的事件多播器上。
+	 * 并在这些ApplicationListener bean销毁之前，将它们从应用上下文的事件多播器上移除。
 	 */
 	@Nullable
 	default Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {

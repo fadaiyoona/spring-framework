@@ -126,20 +126,27 @@ class ConstructorResolver {
 	public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
 			@Nullable Constructor<?>[] chosenCtors, @Nullable Object[] explicitArgs) {
 
+		//先实例化一个BeanWrapperImpl类对象
 		BeanWrapperImpl bw = new BeanWrapperImpl();
+		// initBeanWrapper做了一些事，比如注册解析器、value解析器等等
 		this.beanFactory.initBeanWrapper(bw);
 
 		Constructor<?> constructorToUse = null;
 		ArgumentsHolder argsHolderToUse = null;
 		Object[] argsToUse = null;
 
+		//如果构造参数不为空就直接使用这些参数即可
 		if (explicitArgs != null) {
 			argsToUse = explicitArgs;
 		}
+		// 否则构造函数的入参，交给Spring处理。它会去容器里拿~~~~~
 		else {
 			Object[] argsToResolve = null;
 			synchronized (mbd.constructorArgumentLock) {
+				//获取已缓存解析的构造函数或工厂方法（resolvedConstructorOrFactoryMethod----用于缓存已解析的构造函数或工厂方法）
 				constructorToUse = (Constructor<?>) mbd.resolvedConstructorOrFactoryMethod;
+				////如果缓存不为空，并且构造参数已经解析缓存了，(constructorArgumentsResolved为包可见，用于表示构造参数状态是否已经解析)
+				// 显然首次进来，都是为null并且没有被解析的
 				if (constructorToUse != null && mbd.constructorArgumentsResolved) {
 					// Found a cached constructor...
 					argsToUse = mbd.resolvedConstructorArguments;
@@ -148,13 +155,16 @@ class ConstructorResolver {
 					}
 				}
 			}
+			// 如果上面没有解析过，显然这里参数就是null了,argsToUse也就还为null Spring下面继续解析
 			if (argsToResolve != null) {
 				argsToUse = resolvePreparedArguments(beanName, mbd, bw, constructorToUse, argsToResolve);
 			}
 		}
 
+		//如果缓存的构造器不存在，就说明没有bean进行过解析，需要去关联对应的bean的构造器
 		if (constructorToUse == null || argsToUse == null) {
 			// Take specified constructors, if any.
+			// 我们的传值chosenCtors 显然不为null，所以此值为false
 			Constructor<?>[] candidates = chosenCtors;
 			if (candidates == null) {
 				Class<?> beanClass = mbd.getBeanClass();
@@ -169,6 +179,7 @@ class ConstructorResolver {
 				}
 			}
 
+			// 唯一构造函数，并且构造函数没有参数，才会通过此分支进行实例化bw
 			if (candidates.length == 1 && explicitArgs == null && !mbd.hasConstructorArgumentValues()) {
 				Constructor<?> uniqueCandidate = candidates[0];
 				if (uniqueCandidate.getParameterCount() == 0) {
@@ -183,48 +194,69 @@ class ConstructorResolver {
 			}
 
 			// Need to resolve the constructor.
+			// 我们的传值chosenCtors 显然不为null，所以此值为true
 			boolean autowiring = (chosenCtors != null ||
 					mbd.getResolvedAutowireMode() == AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR);
 			ConstructorArgumentValues resolvedValues = null;
 
+			// 构造函数最少的参数数量
 			int minNrOfArgs;
+			//若传入的构造参数不为空，那最小参数长度以他为准
 			if (explicitArgs != null) {
 				minNrOfArgs = explicitArgs.length;
 			}
 			else {
+				// 这里相当于要解析出构造函数的参数了
+				// 解析对应的构造参数然后添加到ConstructorArgumentValues中
 				ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
 				resolvedValues = new ConstructorArgumentValues();
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}
 
+			// 这个构造器排序有点意思
+			//按照访问方式和数量对构造器进行排序；public>protect>private，在同为public时构造器入参多的排在前面
+			// 所以排在第一位的，是public的，参数最多的构造器
 			AutowireUtils.sortConstructors(candidates);
 			int minTypeDiffWeight = Integer.MAX_VALUE;
+			// 记录下，引起歧义的构造器们。就是记录下来，如果存在这种歧义，抛异常的时候用来告诉调用者
 			Set<Constructor<?>> ambiguousConstructors = null;
 			LinkedList<UnsatisfiedDependencyException> causes = null;
 
+			// 开始遍历排序后的构造器了==========================
 			for (Constructor<?> candidate : candidates) {
 				int parameterCount = candidate.getParameterCount();
 
+				// constructorToUse不为null(表示已经找到了合适构造器)，但是呢，连参数个数的长度都对应不上，那就直接break，后面的构造器全都不用看了
 				if (constructorToUse != null && argsToUse != null && argsToUse.length > parameterCount) {
 					// Already found greedy constructor that can be satisfied ->
 					// do not look any further, there are only less greedy constructors left.
 					break;
 				}
+				// 如果参数个数比最小个数还小，那就继续下一个构造器吧。
 				if (parameterCount < minNrOfArgs) {
 					continue;
 				}
 
+				// 持有最终spring解析完构造器参数自动获取到的Bean参数
 				ArgumentsHolder argsHolder;
+				// 拿到构造器参数的类型们
 				Class<?>[] paramTypes = candidate.getParameterTypes();
 				if (resolvedValues != null) {
 					try {
+						//兼容JDK6提供的@ConstructorProperties这个注解，如果它标注了参数名，那就以它的名字为准
+						//@ConstructorProperties的作用=======》构造函数上的注解，显示该构造函数的参数如何与构造对象的getter方法相对应
 						String[] paramNames = ConstructorPropertiesChecker.evaluate(candidate, parameterCount);
+						// 否则，就自己解析
 						if (paramNames == null) {
+							// 一般都是Bean工厂默认的DefaultParameterNameDiscoverer 解析出变量名
 							ParameterNameDiscoverer pnd = this.beanFactory.getParameterNameDiscoverer();
 							if (pnd != null) {
 								paramNames = pnd.getParameterNames(candidate);
 							}
 						}
+						//根据获取到的参数名和已经查到的构造参数和构造参数类型来创建用户创建构造器用的构造参数数组
+						//这个数组中包含了原始的参数列表和构造后的参数列表，用来对比用
+						// 此处，Spring完成了构造函数参数的自动注入获取。
 						argsHolder = createArgumentArray(beanName, mbd, resolvedValues, bw, paramTypes, paramNames,
 								getUserDeclaredConstructor(candidate), autowiring, candidates.length == 1);
 					}
@@ -248,10 +280,16 @@ class ConstructorResolver {
 					argsHolder = new ArgumentsHolder(explicitArgs);
 				}
 
+				//lenientConstructorResolution的值ture与false有什么区别：
+				//这个属性默认值是true，在大部分情况下都是使用[宽松模式]，即使多个构造函数的参数数量相同、类型存在父子类、接口实现类关系也能正常创建bean。
+				// false表示严格模式。与上面相反
+				// typeDiffWeight:返回不同的个数的权重（权重概念？）
 				int typeDiffWeight = (mbd.isLenientConstructorResolution() ?
 						argsHolder.getTypeDifferenceWeight(paramTypes) : argsHolder.getAssignabilityWeight(paramTypes));
 				// Choose this constructor if it represents the closest match.
+				// 根据权重，选择一个最为合适的构造器
 				if (typeDiffWeight < minTypeDiffWeight) {
+					// 大都进这里来，然后是木有ambiguousConstructors 的
 					constructorToUse = candidate;
 					argsHolderToUse = argsHolder;
 					argsToUse = argsHolder.arguments;
@@ -267,6 +305,7 @@ class ConstructorResolver {
 				}
 			}
 
+			// 如果此时还没发现可用的构造器，那这里就开始处理异常吧~
 			if (constructorToUse == null) {
 				if (causes != null) {
 					UnsatisfiedDependencyException ex = causes.removeLast();
@@ -292,14 +331,21 @@ class ConstructorResolver {
 		}
 
 		Assert.state(argsToUse != null, "Unresolved constructor arguments");
+		//用上面得到的构造器（无论是从bean对象中获取的还是spring自己构建的）
+		// 和参数来反射创建bean实例，并放到BeanWrapperImpl对象中然后返回
 		bw.setBeanInstance(instantiate(beanName, mbd, constructorToUse, argsToUse));
 		return bw;
 	}
 
+	/**
+	 * 下面步骤都是通用的，用上面得到的构造器（无论是从bean对象中获取的还是spring自己构建的）
+	 * 和参数来反射创建bean实例，并放到BeanWrapperImpl对象中然后返回
+	 */
 	private Object instantiate(
 			String beanName, RootBeanDefinition mbd, Constructor<?> constructorToUse, Object[] argsToUse) {
 
 		try {
+			// 拿到生成Bean实例化策略，默认值为CglibSubclassingInstantiationStrategy  用CGLIB生成子类的方式
 			InstantiationStrategy strategy = this.beanFactory.getInstantiationStrategy();
 			if (System.getSecurityManager() != null) {
 				return AccessController.doPrivileged((PrivilegedAction<Object>) () ->
@@ -307,6 +353,9 @@ class ConstructorResolver {
 						this.beanFactory.getAccessControlContext());
 			}
 			else {
+				// 主要就是调用了策略器的instantiate，对Bean进行了最终的实例化
+				// 此方法为重载方法，此处因为不需要代理，所以执行的直接是SimpleInstantiationStrategy#instantiate
+				// 到此处，一个Bean创建完成，然后继续到doCreateBean方法去吧
 				return strategy.instantiate(mbd, beanName, this.beanFactory, constructorToUse, argsToUse);
 			}
 		}

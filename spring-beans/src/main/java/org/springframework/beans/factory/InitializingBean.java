@@ -30,6 +30,9 @@ package org.springframework.beans.factory;
  * @see DisposableBean
  * @see org.springframework.beans.factory.config.BeanDefinition#getPropertyValues()
  * @see org.springframework.beans.factory.support.AbstractBeanDefinition#getInitMethodName()
+ *
+ * InitializingBean.afterPropertiesSet 是在仅仅自己被创建好了执行的，执行init初始化方法时执行。
+ * 在org.springframework.beans.factory.config.BeanPostProcessor#postProcessBeforeInitialization(java.lang.Object, java.lang.String)之后
  */
 public interface InitializingBean {
 
@@ -40,6 +43,8 @@ public interface InitializingBean {
 	 * configuration and final initialization when all bean properties have been set.
 	 * @throws Exception in the event of misconfiguration (such as failure to set an
 	 * essential property) or if initialization fails for any other reason
+	 *
+	 * 做一些属性的设置
 	 */
 	void afterPropertiesSet() throws Exception;
 

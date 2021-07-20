@@ -34,6 +34,11 @@ import org.springframework.lang.Nullable;
  * @author Juergen Hoeller
  * @since 2.0.3
  * @see InstantiationAwareBeanPostProcessorAdapter
+ *
+ * 使用场景：AutowiredAnnotationBeanPostProcessor：依赖注入时的泛型依赖注入，就通过这个能智能判断类型来注入。
+ * 泛型依赖注入的优点：允许我们在使用spring进行依赖注入的同时，利用泛型的优点对代码进行精简，将可重复使用的代码全部放到一个类之中，方便以后的维护和修改。比如常用的Base设计。。。（属于Spring 4.0的新特性）
+ *
+ * 执行时机：Bean实例化时，与InstantiationAwareBeanPostProcessor执行时机差异不大
  */
 public interface SmartInstantiationAwareBeanPostProcessor extends InstantiationAwareBeanPostProcessor {
 
@@ -45,6 +50,8 @@ public interface SmartInstantiationAwareBeanPostProcessor extends InstantiationA
 	 * @param beanName the name of the bean
 	 * @return the type of the bean, or {@code null} if not predictable
 	 * @throws org.springframework.beans.BeansException in case of errors
+	 *
+	 * 预测Bean的类型，返回第一个预测成功的Class类型，如果不能预测返回null
 	 */
 	@Nullable
 	default Class<?> predictBeanType(Class<?> beanClass, String beanName) throws BeansException {
@@ -58,6 +65,10 @@ public interface SmartInstantiationAwareBeanPostProcessor extends InstantiationA
 	 * @param beanName the name of the bean
 	 * @return the candidate constructors, or {@code null} if none specified
 	 * @throws org.springframework.beans.BeansException in case of errors
+	 *
+	 * 选择合适的构造器，比如目标对象有多个构造器，在这里可以进行一些定制化，选择合适的构造器
+	 * beanClass参数表示目标实例的类型，beanName是目标实例在Spring容器中的name
+	 * 返回值是个构造器数组，如果返回null，会执行下一个PostProcessor的determineCandidateConstructors方法；否则选取该PostProcessor选择的构造器
 	 */
 	@Nullable
 	default Constructor<?>[] determineCandidateConstructors(Class<?> beanClass, String beanName)
@@ -86,6 +97,10 @@ public interface SmartInstantiationAwareBeanPostProcessor extends InstantiationA
 	 * @return the object to expose as bean reference
 	 * (typically with the passed-in bean instance as default)
 	 * @throws org.springframework.beans.BeansException in case of errors
+	 *
+	 * 获得提前暴露的bean引用。主要用于解决循环引用的问题
+	 * 只有单例对象才会调用此方法
+	 * 在我们准们处理讲解循环引用的时候，这个方法会起到比较关键的作用
 	 */
 	default Object getEarlyBeanReference(Object bean, String beanName) throws BeansException {
 		return bean;

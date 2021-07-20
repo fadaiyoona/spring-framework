@@ -46,6 +46,11 @@ package org.springframework.context;
  * @see ConfigurableApplicationContext
  * @see org.springframework.jms.listener.AbstractMessageListenerContainer
  * @see org.springframework.scheduling.quartz.SchedulerFactoryBean
+ *
+ * Spring生命周期相关
+ * Lifecycle 中包含start/stop方法，实现此接口后Spring会保证在启动的时候调用其start方法开始生命周期，
+ * 并在Spring关闭的时候调用 stop方法来结束生命周期，通常用来配置后台程序，在启动后一直运行（如对 MQ 进行轮询等）。
+ * 而ApplicationContext的初始化最后正是保证了这一功能的实现。
  */
 public interface Lifecycle {
 

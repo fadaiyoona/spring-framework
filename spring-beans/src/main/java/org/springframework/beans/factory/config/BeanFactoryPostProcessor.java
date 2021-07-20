@@ -58,6 +58,8 @@ import org.springframework.beans.BeansException;
  * @since 06.07.2003
  * @see BeanPostProcessor
  * @see PropertyResourceConfigurer
+ *
+ * BeanFactory的后置处理器，在BeanFactory创建完成后执行
  */
 @FunctionalInterface
 public interface BeanFactoryPostProcessor {

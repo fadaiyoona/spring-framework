@@ -40,6 +40,8 @@ package org.springframework.beans.factory;
  * @author Juergen Hoeller
  * @since 4.1
  * @see org.springframework.beans.factory.config.ConfigurableListableBeanFactory#preInstantiateSingletons()
+ *
+ * 执行时机：所有非lazy单例Bean实例化完成后的回调方法
  */
 public interface SmartInitializingSingleton {
 
@@ -52,6 +54,11 @@ public interface SmartInitializingSingleton {
 	 * lazily initialized on demand after {@link BeanFactory} bootstrap,
 	 * and not for any other bean scope either. Carefully use it for beans
 	 * with the intended bootstrap semantics only.
+	 *
+	 * 所有非lazy单例Bean实例化完成后的回调方法
+	 *
+	 * 比如EventListenerMethodProcessor它在afterSingletonsInstantiated方法里就去处理所有的Bean的方法,
+	 * 看看哪些被标注了@EventListener注解，提取处理也作为一个Listener放到容器addApplicationListener里面去
 	 */
 	void afterSingletonsInstantiated();
 

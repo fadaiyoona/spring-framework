@@ -119,14 +119,24 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 */
 	@Override
 	protected final void refreshBeanFactory() throws BeansException {
+		// 判断是否已经存在BeanFactory，存在则销毁所有Beans，并且关闭BeanFactory
+		// 避免重复加载BeanFactory
 		if (hasBeanFactory()) {
 			destroyBeans();
 			closeBeanFactory();
 		}
 		try {
+			// 创建具体的beanFactory，这里创建的是DefaultListableBeanFactory，最重要的beanFactory spring注册及加载bean就靠它
+			// createBeanFactory()这个方法，看下面，还有得说的
 			DefaultListableBeanFactory beanFactory = createBeanFactory();
 			beanFactory.setSerializationId(getId());
+			// 这句比较简单，就是把当前旧容器的一些配置值复制给新容器
+			// allowBeanDefinitionOverriding属性是指是否允对一个名字相同但definition不同进行重新注册，默认是true。
+			// allowCircularReferences属性是指是否允许Bean之间循环引用，默认是true.
+			// 这两个属性值初始值为空：复写此方法即可customizeBeanFactory
 			customizeBeanFactory(beanFactory);
+			// 这个就是最重要的了，加载所有的Bean配置信息，具体如下详细解释
+			// 它属于模版方法，由子类去实现加载的方式
 			loadBeanDefinitions(beanFactory);
 			this.beanFactory = beanFactory;
 		}
@@ -194,6 +204,7 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 * @see org.springframework.beans.factory.support.DefaultListableBeanFactory#setAllowRawInjectionDespiteWrapping
 	 */
 	protected DefaultListableBeanFactory createBeanFactory() {
+		// 创建的时候就是new了一个工厂：DefaultListableBeanFactory   这个时候工厂里面所有东西都是默认值，很多还没有完成初始化属性的设置呢
 		return new DefaultListableBeanFactory(getInternalParentBeanFactory());
 	}
 

@@ -237,16 +237,24 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * not for actual use
 	 * @return an instance of the bean
 	 * @throws BeansException if the bean could not be created
+	 *
+	 * 不是简单的get有就返回，没有就返回null这么简单的操作。而是里面做了实例化、依赖注入、属性赋值、解决循环依赖等一些列操作~
 	 */
 	@SuppressWarnings("unchecked")
 	protected <T> T doGetBean(
 			String name, @Nullable Class<T> requiredType, @Nullable Object[] args, boolean typeCheckOnly)
 			throws BeansException {
-
+		// 该方法作用：
+		// 1、如果是FactoryBean,会去掉Bean开头的&符号
+		// 2、能存在传入别名且别名存在多重映射的情况，这里会返回最终的名字，如存在多层别名映射A->B->C->D，传入D,最终会返回A
 		String beanName = transformedBeanName(name);
 		Object bean;
 
 		// Eagerly check singleton cache for manually registered singletons.
+		// getSingleton()方法的实现，在父类DefaultSingletonBeanRegistry中，请先移步下面，看详解
+		// 这里先尝试从缓存中获取，若获取不到，就走下面的创建
+		// 特别注意的是：这里面走创建（发现是个new的），就加入进缓存里面了 if (newSingleton) {addSingleton(beanName, singletonObject);}
+		// 缓存的字段为全局的Map:singletonObjects
 		Object sharedInstance = getSingleton(beanName);
 		if (sharedInstance != null && args == null) {
 			if (logger.isTraceEnabled()) {
@@ -402,13 +410,21 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		return (T) bean;
 	}
 
+	/**
+	 * 再说明一下containsLocalBean这个方法，和containsBean的区别在于它只在自己的容器里找，不去父容器里找，其余的一样
+	 */
 	@Override
 	public boolean containsBean(String name) {
+		// 显然，只有容器里存在的，才能根据这个名称注册进去。
+		//注意，这里存在，有点意思：含有Bean，或者Bean定义等等都算
 		String beanName = transformedBeanName(name);
+		// 首先工厂里必须有单例Bean，或者bean定义
+		// 然后还必须不是BeanFactory（不是&打头）,或者是FactoryBean  就算是包含这个Bean的
 		if (containsSingleton(beanName) || containsBeanDefinition(beanName)) {
 			return (!BeanFactoryUtils.isFactoryDereference(name) || isFactoryBean(name));
 		}
 		// Not found -> check parent.
+		// 看看父容器里有木有
 		BeanFactory parentBeanFactory = getParentBeanFactory();
 		return (parentBeanFactory != null && parentBeanFactory.containsBean(originalBeanName(name)));
 	}
@@ -1278,6 +1294,16 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * @return a (potentially merged) RootBeanDefinition for the given bean
 	 * @throws NoSuchBeanDefinitionException if there is no bean with the given name
 	 * @throws BeanDefinitionStoreException in case of an invalid bean definition
+	 *
+	 *  Bean定义公共的抽象类是AbstractBeanDefinition，普通的Bean在Spring加载Bean定义的时候，实例化出来的是GenericBeanDefinition，
+	 *  而Spring上下文包括实例化所有Bean用的AbstractBeanDefinition是RootBeanDefinition，
+	 *  这时候就使用getMergedLocalBeanDefinition方法做了一次转化，
+	 *  将非RootBeanDefinition转换为RootBeanDefinition以供后续操作。
+	 *
+	 *  该方法功能说明：在map缓存中把Bean的定义拿出来。交给getMergedLocalBeanDefinition处理。最终转换成了RootBeanDefinition类型
+	 * 	在转换的过程中如果BeanDefinition的父类不为空，则把父类的属性也合并到RootBeanDefinition中，
+	 * 	所以getMergedLocalBeanDefinition方法的作用就是获取缓存的BeanDefinition对象并合并其父类和本身的属性
+	 * 	注意如果当前BeanDefinition存在父BeanDefinition，会基于父BeanDefinition生成一个RootBeanDefinition,然后再将调用OverrideFrom子BeanDefinition的相关属性覆写进去
 	 */
 	protected RootBeanDefinition getMergedLocalBeanDefinition(String beanName) throws BeansException {
 		// Quick check on the concurrent map first, with minimal locking.
