@@ -100,8 +100,11 @@ public class InjectionMetadata {
 
 	public void checkConfigMembers(RootBeanDefinition beanDefinition) {
 		Set<InjectedElement> checkedElements = new LinkedHashSet<>(this.injectedElements.size());
+		// 遍历待注入的 bean(被封装成了 element )
 		for (InjectedElement element : this.injectedElements) {
+			// 获取 Member，包含了 bean 信息
 			Member member = element.getMember();
+			// 如果没被缓存则进行缓存，否则直接跳过
 			if (!beanDefinition.isExternallyManagedConfigMember(member)) {
 				beanDefinition.registerExternallyManagedConfigMember(member);
 				checkedElements.add(element);
@@ -111,6 +114,7 @@ public class InjectionMetadata {
 	}
 
 	public void inject(Object target, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
+		// 封装好的列，持有Bean对象中所有的列，后面对这些列遍历处理即可
 		Collection<InjectedElement> checkedElements = this.checkedElements;
 		Collection<InjectedElement> elementsToIterate =
 				(checkedElements != null ? checkedElements : this.injectedElements);

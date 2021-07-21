@@ -141,17 +141,29 @@ public class QualifierAnnotationAutowireCandidateResolver extends GenericTypeAwa
 	 * fallback to match against the bean name or an alias if a qualifier or
 	 * attribute does not match.
 	 * @see Qualifier
+	 *
+	 * 判断该Bean是否能注入（会解析@Qualifier注解）
+	 *
+	 * 检查@Qualifier注解是否符合条件
+	 * 上面知道了，若类型啥的都匹配上了，接下来还得解析@Qualifier是否匹配，它有一个很有意思的点：@Qualifier可以标注在类上面，也可以达到匹配的效果。（但它不是Bean名称，也不是bean的别名）
 	 */
 	@Override
 	public boolean isAutowireCandidate(BeanDefinitionHolder bdHolder, DependencyDescriptor descriptor) {
 		boolean match = super.isAutowireCandidate(bdHolder, descriptor);
+		// 到了这，如果是false，说明泛型没有匹配上(那就不用继续往下走了)
+		// 如果是true，那就继续，解析@Qualifier注解啦  所以若你标记了@Qualifier注解 也是需要对应上
 		if (match) {
+			// 这个逻辑比较简单，看看有没有标注@Qualifier注解(没有标注也是返回true~~)
+			// 需要注意的是，Spring这里支持自己的@Qualifier，也支持javax.inject.Qualifier
+			// checkQualifiers() 这个方法有一些有意思的处理，因此还是决定讲解一下，请参见下面的解析~~~~~
 			match = checkQualifiers(bdHolder, descriptor.getAnnotations());
 			if (match) {
+				// 兼容到方法级别的注入~~~~~~~~~~~~~
 				MethodParameter methodParam = descriptor.getMethodParameter();
 				if (methodParam != null) {
 					Method method = methodParam.getMethod();
 					if (method == null || void.class == method.getReturnType()) {
+						// 将给定的@Qualifier注解与候选bean定义匹配~~~（简单的书就是看看类型已匹配上的，@Qualifier是否还能匹配上）
 						match = checkQualifiers(bdHolder, methodParam.getMethodAnnotations());
 					}
 				}
@@ -162,8 +174,12 @@ public class QualifierAnnotationAutowireCandidateResolver extends GenericTypeAwa
 
 	/**
 	 * Match the given qualifier annotations against the candidate bean definition.
+	 *
+	 * 将给定的@Qualifier注解与候选bean定义匹配~~~（简单的书就是看看类型已匹配上的，@Qualifier是否还能匹配上）
 	 */
 	protected boolean checkQualifiers(BeanDefinitionHolder bdHolder, Annotation[] annotationsToSearch) {
+		// 这里一般会有两个注解  一个@Autowired 一个@Qualifier
+		// 或者还有其余的组合注解~~~
 		if (ObjectUtils.isEmpty(annotationsToSearch)) {
 			return true;
 		}
@@ -172,7 +188,18 @@ public class QualifierAnnotationAutowireCandidateResolver extends GenericTypeAwa
 			Class<? extends Annotation> type = annotation.annotationType();
 			boolean checkMeta = true;
 			boolean fallbackToMeta = false;
+			//isQualifier：判断是不是@Qualifier注解以及 JSR330的`javax.inject.Qualifier`注解也是支持的
 			if (isQualifier(type)) {
+				// checkQualifier 最重要的方法就是这个了，它是个重载方法。。。它的内容非常长，大致我在这里解析步骤如下：
+				//1、bd.getQualifier 看看Bean定义里是否已经定义过tQualifier们(但是经过我的跟踪，Bean定义得这个字段：private final Map<String, AutowireCandidateQualifier> qualifiers;永远不会被赋值 如有人知道，请告知我 了能事Spring预留得吧)
+				//2、该Bean定义得AnnotatedElement qualifiedElement的这个属性上是否有指定的注解，有就拿出这个Annotation，否则继续下一步
+				//3、resolvedFactoryMethod工厂方法上是否有这个注解，否则进行下一步（下一步事关键。。。）
+				//4、Look for matching annotation on the target class  JavaDoc得意思备注也很清晰，就是去具体得类上面，看有没有有对应的注解，有就拿出来。
+				//（有个细节）：即使这个类被代理了，也是能拿到标注在它上面的注解的  因为： AnnotationUtils.getAnnotation(ClassUtils.getUserClass(bd.getBeanClass()), type)
+				//5、到这里，如果获得了对应的@Qualifier注解，那就会比较。如果value值也相同，那就return true，否则继续往下走
+				//6、接下来拿到这个注解的attributes，然后判断若@Qualifier没有value值或者是空串，就只return false了  否则继续看
+				//7、最终会和Bean上面那个注解（一般都是@Component等注解）的value值和@Qualifier得value值进行比较，若相等  就最终返回true勒（请注意：此处Bean得alias别名若相等也是会返回true）
+				//8、======就这样，我们就完成了Bean定义和@Qualifier得一个匹配过程======
 				if (!checkQualifier(bdHolder, annotation, typeConverter)) {
 					fallbackToMeta = true;
 				}
@@ -180,6 +207,8 @@ public class QualifierAnnotationAutowireCandidateResolver extends GenericTypeAwa
 					checkMeta = false;
 				}
 			}
+			// 这一步非常有效：相当于支持到了组合注解的情况。 它连注解的注解都会解析
+			// 比如我们@MyAnno上面还有@Qualifier注解，仍然会被这里解析到的  内部有一个递归
 			if (checkMeta) {
 				boolean foundMeta = false;
 				for (Annotation metaAnn : type.getAnnotations()) {

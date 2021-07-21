@@ -66,6 +66,12 @@ public class GenericTypeAwareAutowireCandidateResolver extends SimpleAutowireCan
 			// If explicitly false, do not proceed with any other checks...
 			return false;
 		}
+		// 这里，这里，这里  看方法名就能看出来。检测看看泛型是否匹配。
+		// 若泛型都不匹配，就直接返回false了,基本步骤为：
+		//1、从descriptor里拿倒泛型类型
+		//2、First, check factory method return type, if applicable
+		//3、return dependencyType.isAssignableFrom(targetType);
+		// 这个方法官方doc为：Full check for complex generic type match... 带泛型的全检查，而不是简单Class类型的判断
 		return checkGenericTypeMatch(bdHolder, descriptor);
 	}
 
