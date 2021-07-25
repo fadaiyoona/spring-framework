@@ -124,9 +124,11 @@ abstract class ConfigurationClassUtils {
 
 		Map<String, Object> config = metadata.getAnnotationAttributes(Configuration.class.getName());
 		if (config != null && !Boolean.FALSE.equals(config.get("proxyBeanMethods"))) {
+			// 只要这个类标注了：@Configuration注解就行  哪怕是接口、抽象类都木有问题 都是FULL模式
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
 		else if (config != null || isConfigurationCandidate(metadata)) {
+			// 判断是Lite模式
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
 		}
 		else {
@@ -148,14 +150,21 @@ abstract class ConfigurationClassUtils {
 	 * @param metadata the metadata of the annotated class
 	 * @return {@code true} if the given class is to be registered for
 	 * configuration class processing; {@code false} otherwise
+	 *
+	 * 	// 判断是Lite模式：（首先肯定没有@Configuration注解）
+	 * 	// 1、不能是接口
+	 * 	// 2、但凡只有标注了一个下面注解，都算lite模式：@Component @ComponentScan @Import @ImportResource
+	 * 	// 3、只有存在有一个方法标注了@Bean注解，那就是lite模式
 	 */
 	public static boolean isConfigurationCandidate(AnnotationMetadata metadata) {
 		// Do not consider an interface or an annotation...
+		// 不能是接口
 		if (metadata.isInterface()) {
 			return false;
 		}
 
 		// Any of the typical annotations found?
+		// 但凡只有标注了一个下面注解，都算lite模式：@Component @ComponentScan @Import @ImportResource
 		for (String indicator : candidateIndicators) {
 			if (metadata.isAnnotated(indicator)) {
 				return true;
@@ -163,6 +172,7 @@ abstract class ConfigurationClassUtils {
 		}
 
 		// Finally, let's look for @Bean methods...
+		// 只有存在有一个方法标注了@Bean注解，那就是lite模式
 		return hasBeanMethods(metadata);
 	}
 

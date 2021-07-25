@@ -113,9 +113,21 @@ class ConfigurationClassBeanDefinitionReader {
 	/**
 	 * Read {@code configurationModel}, registering bean definitions
 	 * with the registry based on its contents.
+	 *
+	 * 1、最先处理注册@Import进来的Bean定义~，判断依据是：configClass.isImported()。
+	 * 官方解释为：Return whether this configuration class was registered via @{@link Import} or automatically registered due to being nested within another configuration class
+	 * 这句话的意思是说@Import或者内部类或者通过别的配置类放进来的都是被导入进来的~~~~
+	 * 2、第二步开始注册@Bean进来的：若是static方法，beanDef.setBeanClassName(configClass.getMetadata().getClassName()) + beanDef.setFactoryMethodName(methodName)；
+	 * 若是实例方法：beanDef.setFactoryBeanName(configClass.getBeanName())+ beanDef.setUniqueFactoryMethodName(methodName) 总之对使用者来说 没有太大的区别
+	 * 3、注册importedResources进来的bean们。就是@ImportResource这里来的Bean定义
+	 * 4、执行ImportBeanDefinitionRegistrar#registerBeanDefinitions()注册Bean定义信息~（也就是此处执行ImportBeanDefinitionRegistrar的接口方法）
 	 */
 	public void loadBeanDefinitions(Set<ConfigurationClass> configurationModel) {
+		// 对每个@Configuration 类文件做遍历（所以 Config配置文件的顺序还是挺重要的）
 		TrackedConditionEvaluator trackedConditionEvaluator = new TrackedConditionEvaluator();
+		// 遍历处理参数configurationModel中的每个配置类
+		// 因为对于parser来说，只要是@Component都是一个组件（配置文件），只是是Lite模式而已
+		// 因此我们也是可以在任意一个@Component标注的类上使用@Bean向里面注册Bean的，相当于采用的Lite模式。只是，只是我们一般不会去这么干而已，毕竟要职责单一
 		for (ConfigurationClass configClass : configurationModel) {
 			loadBeanDefinitionsForConfigurationClass(configClass, trackedConditionEvaluator);
 		}
@@ -124,10 +136,18 @@ class ConfigurationClassBeanDefinitionReader {
 	/**
 	 * Read a particular {@link ConfigurationClass}, registering bean definitions
 	 * for the class itself and all of its {@link Bean} methods.
+	 *
+	 * private 方法来解析每一个已经解析好的@Configuration配置文件~~~
+	 *
+	 * 从指定的一个配置类ConfigurationClass中提取bean定义信息并注册bean定义到bean容器 :
+	 * 1. 配置类本身要注册为bean定义
+	 * 2. 配置类中的@Bean注解方法要注册为配置类
 	 */
 	private void loadBeanDefinitionsForConfigurationClass(
 			ConfigurationClass configClass, TrackedConditionEvaluator trackedConditionEvaluator) {
 
+		// 判断是否需要跳过，与之前解析@Configuration判断是否跳过的逻辑是相同的 借助了conditionEvaluator。如果需要
+		// 显然这里，哪怕是helloServiceImpl都不会被跳过
 		if (trackedConditionEvaluator.shouldSkip(configClass)) {
 			String beanName = configClass.getBeanName();
 			if (StringUtils.hasLength(beanName) && this.registry.containsBeanDefinition(beanName)) {
@@ -137,14 +157,22 @@ class ConfigurationClassBeanDefinitionReader {
 			return;
 		}
 
+		// 最先处理注册@Import进来的Bean定义~
+		// 如果这个类是@Import进来的  那就注册为一个BeanDefinition   比如这种@Import(Child.class)  这里就会是true
 		if (configClass.isImported()) {
 			registerBeanDefinitionForImportedConfigurationClass(configClass);
 		}
+		// 第二步开始注册@Bean进来的
+		// 这里处理的是所有标注有@Bean注解的方法们，然后注册成BeanDefinition
+		// 同时会解析一些列的@Bean内的属性，以及可以标注的其余注解
+		// 备注：方法访问权限无所谓，private都行。然后static的也行
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
 
+		// 注册importedResources进来的bean们。就是@ImportResource这里来的Bean定义
 		loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
+		// 执行ImportBeanDefinitionRegistrar#registerBeanDefinitions()注册Bean定义信息~（也就是此处执行ImportBeanDefinitionRegistrar的接口方法）
 		loadBeanDefinitionsFromRegistrars(configClass.getImportBeanDefinitionRegistrars());
 	}
 

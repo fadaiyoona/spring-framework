@@ -417,10 +417,16 @@ import org.springframework.stereotype.Component;
  * @see ConfigurationClassPostProcessor
  * @see org.springframework.core.env.Environment
  * @see org.springframework.test.context.ContextConfiguration
+ *
+ * @Configuration注解的配置类有如下要求
+ * 1、@Configuration不可以是final类型
+ * 2、@Configuration不可以是匿名类
+ * 3、嵌套的@Configuration必须是静态类
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+// 它也是个Spring的组件，会被扫描
 @Component
 public @interface Configuration {
 
@@ -436,6 +442,7 @@ public @interface Configuration {
 	 * @return the explicit component name, if any (or empty String otherwise)
 	 * @see AnnotationBeanNameGenerator
 	 */
+	// 也可以自定义Bean的名称
 	@AliasFor(annotation = Component.class)
 	String value() default "";
 
