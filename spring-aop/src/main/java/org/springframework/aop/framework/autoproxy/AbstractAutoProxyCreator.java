@@ -112,6 +112,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	/** Default is global AdvisorAdapterRegistry. */
+	// 实现类就是我们熟悉的它：	DefaultAdvisorAdapterRegistry
 	private AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
 	/**
@@ -125,6 +126,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
 	private boolean applyCommonInterceptorsFirst = true;
 
+	// 目标源的创建器。它有一个方法getTargetSource(Class<?> beanClass, String beanName)
+	// 两个实现类：QuickTargetSourceCreator和LazyInitTargetSourceCreator
 	@Nullable
 	private TargetSourceCreator[] customTargetSourceCreators;
 
@@ -161,6 +164,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * <p>Default is the global {@link AdvisorAdapterRegistry}.
 	 * @see org.springframework.aop.framework.adapter.GlobalAdvisorAdapterRegistry
 	 */
+	// 可以自己指定Registry
 	public void setAdvisorAdapterRegistry(AdvisorAdapterRegistry advisorAdapterRegistry) {
 		this.advisorAdapterRegistry = advisorAdapterRegistry;
 	}
@@ -179,6 +183,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * Ordering is significant: The {@code TargetSource} returned from the first matching
 	 * {@code TargetSourceCreator} (that is, the first that returns non-null) will be used.
 	 */
+	// 可议指定多个
 	public void setCustomTargetSourceCreators(TargetSourceCreator... targetSourceCreators) {
 		this.customTargetSourceCreators = targetSourceCreators;
 	}
@@ -190,6 +195,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * This is perfectly valid, if "specific" interceptors such as matching
 	 * Advisors are all we want.
 	 */
+	// 通用拦截器得名字。These must be bean names in the current factory
+	// 这些Bean必须在当前容器内存在的~~~
 	public void setInterceptorNames(String... interceptorNames) {
 		this.interceptorNames = interceptorNames;
 	}
@@ -198,6 +205,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * Set whether the common interceptors should be applied before bean-specific ones.
 	 * Default is "true"; else, bean-specific interceptors will get applied first.
 	 */
+	// 默认值是true
 	public void setApplyCommonInterceptorsFirst(boolean applyCommonInterceptorsFirst) {
 		this.applyCommonInterceptorsFirst = applyCommonInterceptorsFirst;
 	}
@@ -217,6 +225,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	}
 
 
+	// getBeanNamesForType()的时候会根据每个BeanName去匹配类型合适的Bean，这里不例外，也会帮忙在proxyTypes找一下
 	@Override
 	@Nullable
 	public Class<?> predictBeanType(Class<?> beanClass, String beanName) {
@@ -233,6 +242,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		return null;
 	}
 
+	// getEarlyBeanReference()它是为了解决单例bean之间的循环依赖问题，提前将代理对象暴露出去
 	@Override
 	public Object getEarlyBeanReference(Object bean, String beanName) {
 		Object cacheKey = getCacheKey(bean.getClass(), beanName);
@@ -240,23 +250,43 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		return wrapIfNecessary(bean, beanName, cacheKey);
 	}
 
+	/**
+	 * 每一个bean创建之前，调用postProcessBeforeInstantiation()；
+	 * 	1）、判断当前bean是否在advisedBeans中（保存了所有需要增强bean）
+	 * 	2）、判断当前bean是否是基础类型的Advice、Pointcut、Advisor、AopInfrastructureBean，或者是否是切面（@Aspect）
+	 * 	3）、是否需要跳过
+	 * 		1）、获取候选的增强器（切面里面的通知方法）【List<Advisor> candidateAdvisors】
+	 * 		每一个封装的通知方法的增强器是 InstantiationModelAwarePointcutAdvisor；判断每一个增强器是否是 AspectJPointcutAdvisor 类型的；返回true
+	 * 		2）、永远返回false
+	 */
 	@Override
 	public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) {
 		Object cacheKey = getCacheKey(beanClass, beanName);
 
+		// beanName无效或者targetSourcedBeans里不包含此Bean
 		if (!StringUtils.hasLength(beanName) || !this.targetSourcedBeans.contains(beanName)) {
+			// 判断当前bean是否在advisedBeans中（保存了所有需要增强bean）
 			if (this.advisedBeans.containsKey(cacheKey)) {
 				return null;
 			}
+			// 判断当前bean是否是基础类型的Advice、Pointcut、Advisor、AopInfrastructureBean，或者是否是切面（@Aspect）
+			// isInfrastructureClass:Advice、Pointcut、Advisor、AopInfrastructureBean的子类，表示是框架所属的Bean
+			// shouldSkip:默认都是返回false的。AspectJAwareAdvisorAutoProxyCreator重写此方法：只要存在一个Advisor   ((AspectJPointcutAdvisor) advisor).getAspectName().equals(beanName)成立  就返回true
 			if (isInfrastructureClass(beanClass) || shouldSkip(beanClass, beanName)) {
+				// 所以这里会把我们所有的Advice、Pointcut、Advisor、AopInfrastructureBean等Bean都装进来
 				this.advisedBeans.put(cacheKey, Boolean.FALSE);
 				return null;
 			}
 		}
 
+		//到这，只有在TargetSource中没有进行缓存，并且应该被切面逻辑环绕，但是目前还未生成代理对象的bean才会通过此方法
+
 		// Create proxy here if we have a custom TargetSource.
 		// Suppresses unnecessary default instantiation of the target bean:
 		// The TargetSource will handle target instances in a custom fashion.
+		// 如果我们有TargetSourceCreator，这里就会创建一个代理对象
+		// getCustomTargetSource逻辑：存在TargetSourceCreator  并且 beanFactory.containsBean(beanName)
+		// 然后遍历所有的TargetSourceCreator，调用getTargetSource谁先创建不为null就终止
 		TargetSource targetSource = getCustomTargetSource(beanClass, beanName);
 		if (targetSource != null) {
 			if (StringUtils.hasLength(beanName)) {
@@ -290,6 +320,22 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * Create a proxy with the configured interceptors if the bean is
 	 * identified as one to proxy by the subclass.
 	 * @see #getAdvicesAndAdvisorsForBean
+	 *
+	 * 创建对象 postProcessAfterInitialization；
+	 * 	return wrapIfNecessary(bean, beanName, cacheKey);//包装如果需要的情况下
+	 * 	1）、获取当前bean的所有增强器（通知方法）  Object[]  specificInterceptors
+	 * 		1、找到候选的所有的增强器（找哪些通知方法是需要切入当前bean方法的）
+	 * 		2、获取到能在bean使用的增强器。
+	 * 		3、给增强器排序
+	 * 	2）、保存当前bean在advisedBeans中；
+	 * 	3）、如果当前bean需要增强，创建当前bean的代理对象；
+	 * 		1、获取所有增强器（通知方法）
+	 * 		2、保存到proxyFactory
+	 * 		3、创建代理对象：Spring自动决定
+	 * 			JdkDynamicAopProxy(config);jdk动态代理；
+	 * 			ObjenesisCglibAopProxy(config);cglib的动态代理；
+	 * 	4）、给容器中返回当前组件使用动态代理增强了的代理对象；
+	 * 	5）、以后容器中获取到的就是这个组件的代理对象，执行目标方法的时候，代理对象就会执行通知方法的流程；
 	 */
 	@Override
 	public Object postProcessAfterInitialization(@Nullable Object bean, String beanName) {
@@ -391,6 +437,11 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * @param beanName the name of the bean
 	 * @return whether to skip the given bean
 	 * @see org.springframework.beans.factory.config.AutowireCapableBeanFactory#ORIGINAL_INSTANCE_SUFFIX
+	 *
+	 * 是否需要跳过
+	 * 	 * 		1）、获取候选的增强器（切面里面的通知方法）【List<Advisor> candidateAdvisors】
+	 * 	 * 		每一个封装的通知方法的增强器是 InstantiationModelAwarePointcutAdvisor；判断每一个增强器是否是 AspectJPointcutAdvisor 类型的；返回true
+	 * 	 * 		2）、永远返回false
 	 */
 	protected boolean shouldSkip(Class<?> beanClass, String beanName) {
 		return AutoProxyUtils.isOriginalInstance(beanName, beanClass);

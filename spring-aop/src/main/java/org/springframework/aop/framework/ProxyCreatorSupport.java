@@ -28,6 +28,11 @@ import org.springframework.util.Assert;
  * @author Juergen Hoeller
  * @since 2.0.3
  * @see #createAopProxy()
+ *
+ * 用于设置和保存下面三大信息：
+ * 1、设置被代理对象target 	--- targetSource
+ * 2、设置代理接口		--- interfaces
+ * 3、设置通知advice		--- advisors
  */
 @SuppressWarnings("serial")
 public class ProxyCreatorSupport extends AdvisedSupport {
@@ -102,6 +107,7 @@ public class ProxyCreatorSupport extends AdvisedSupport {
 		if (!this.active) {
 			activate();
 		}
+		// 由此可议看出，它还是委托给了`AopProxyFactory`去做这件事~~~  它的实现类为：DefaultAopProxyFactory
 		return getAopProxyFactory().createAopProxy(this);
 	}
 

@@ -57,6 +57,9 @@ import org.springframework.util.CollectionUtils;
  * @author Rod Johnson
  * @author Juergen Hoeller
  * @see org.springframework.aop.framework.AopProxy
+ *
+ * 它最重要的一个方法是：提供getInterceptorsAndDynamicInterceptionAdvice方法用来获取对应代理方法对应有效的拦截器链
+ * AdvisedSupport本身不会提供创建代理的任何方法，专注于生成拦截器链。委托给ProxyCreatorSupport去创建代理对象
  */
 public class AdvisedSupport extends ProxyConfig implements Advised {
 
@@ -125,6 +128,8 @@ public class AdvisedSupport extends ProxyConfig implements Advised {
 	 * @see #setTargetSource
 	 * @see org.springframework.aop.target.SingletonTargetSource
 	 */
+	// 这里需要注意的是：setTarget最终的效果其实也是转换成了TargetSource
+	// 也就是说Spring最终代理的  是放进去TargetSource让它去处理
 	public void setTarget(Object target) {
 		setTargetSource(new SingletonTargetSource(target));
 	}
@@ -384,6 +389,9 @@ public class AdvisedSupport extends ProxyConfig implements Advised {
 	}
 
 
+	// advice最终都会备转换成一个`Advisor`（DefaultPointcutAdvisor  表示切面+通知），它使用的切面为Pointcut.TRUE
+	// Pointcut.TRUE：表示啥都返回true，也就是说这个增强通知将作用于所有的方法上/所有的方法
+	// 若要自己指定切面（比如切点表达式）,使用它的另一个构造函数：public DefaultPointcutAdvisor(Pointcut pointcut, Advice advice)
 	@Override
 	public void addAdvice(Advice advice) throws AopConfigException {
 		int pos = this.advisors.size();
@@ -475,12 +483,19 @@ public class AdvisedSupport extends ProxyConfig implements Advised {
 	 * @param targetClass the target class
 	 * @return a List of MethodInterceptors (may also include InterceptorAndDynamicMethodMatchers)
 	 */
+	//将之前注入到advisorChain中的advisors转换为MethodInterceptor和InterceptorAndDynamicMethodMatcher集合（放置了这两种类型的数据）
+	// 这些MethodInterceptor们最终在执行目标方法的时候  都是会执行的
 	public List<Object> getInterceptorsAndDynamicInterceptionAdvice(Method method, @Nullable Class<?> targetClass) {
+		// 以这个Method生成一个key，准备缓存
+		// 此处小技巧：当你的key比较复杂事，可以用类来处理。然后重写它的equals、hashCode、toString、compare等方法
 		MethodCacheKey cacheKey = new MethodCacheKey(method);
 		List<Object> cached = this.methodCache.get(cacheKey);
 		if (cached == null) {
+			// 这个方法最终在这 DefaultAdvisorChainFactory#getInterceptorsAndDynamicInterceptionAdvice
+			//DefaultAdvisorChainFactory：生成通知器链的工厂，实现了interceptor链的获取过程
 			cached = this.advisorChainFactory.getInterceptorsAndDynamicInterceptionAdvice(
 					this, method, targetClass);
+			// 此处为了提供效率，相当于把该方法对应的拦截器们都缓存起来，加速后续调用得速度
 			this.methodCache.put(cacheKey, cached);
 		}
 		return cached;

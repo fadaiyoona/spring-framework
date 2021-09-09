@@ -40,6 +40,7 @@ class ObjenesisCglibAopProxy extends CglibAopProxy {
 
 	private static final Log logger = LogFactory.getLog(ObjenesisCglibAopProxy.class);
 
+	// 下面有解释，另外一种创建实例的方式（可议不用空的构造函数哟）
 	private static final SpringObjenesis objenesis = new SpringObjenesis();
 
 
@@ -52,11 +53,13 @@ class ObjenesisCglibAopProxy extends CglibAopProxy {
 	}
 
 
+	// 创建一个代理得实例
 	@Override
 	protected Object createProxyClassAndInstance(Enhancer enhancer, Callback[] callbacks) {
 		Class<?> proxyClass = enhancer.createClass();
 		Object proxyInstance = null;
 
+		// 如果为true，那我们就采用objenesis去new一个实例~~~
 		if (objenesis.isWorthTrying()) {
 			try {
 				proxyInstance = objenesis.newInstance(proxyClass, enhancer.getUseCache());
@@ -67,12 +70,14 @@ class ObjenesisCglibAopProxy extends CglibAopProxy {
 			}
 		}
 
+		// 若果还为null，就再去拿到构造函数（指定参数的）
 		if (proxyInstance == null) {
 			// Regular instantiation via default constructor...
 			try {
 				Constructor<?> ctor = (this.constructorArgs != null ?
 						proxyClass.getDeclaredConstructor(this.constructorArgTypes) :
 						proxyClass.getDeclaredConstructor());
+				// 通过此构造函数  去new一个实例
 				ReflectionUtils.makeAccessible(ctor);
 				proxyInstance = (this.constructorArgs != null ?
 						ctor.newInstance(this.constructorArgs) : ctor.newInstance());

@@ -100,17 +100,23 @@ public class ProxyProcessorSupport extends ProxyConfig implements Ordered, BeanC
 	 * to filter for reasonable proxy interfaces, falling back to a target-class proxy otherwise.
 	 * @param beanClass the class of the bean
 	 * @param proxyFactory the ProxyFactory for the bean
+	 *
+	 * 	这是它最重要的一个方法：就是把该bean所有的实现的接口 都作用在ProxyFactory 上 当然是有过滤得
 	 */
 	protected void evaluateProxyInterfaces(Class<?> beanClass, ProxyFactory proxyFactory) {
+		// 拿到该类所有实现的接口们~~~~
 		Class<?>[] targetInterfaces = ClassUtils.getAllInterfacesForClass(beanClass, getProxyClassLoader());
+		// 标记：是否存在“有问题的”代理接口  默认是false
 		boolean hasReasonableProxyInterface = false;
 		for (Class<?> ifc : targetInterfaces) {
+			//判断这些接口是否是“有问题的”：既我们需要处理的
 			if (!isConfigurationCallbackInterface(ifc) && !isInternalLanguageInterface(ifc) &&
 					ifc.getMethods().length > 0) {
 				hasReasonableProxyInterface = true;
 				break;
 			}
 		}
+		// 说明除开哪些接口外，但凡有一个有用的接口，就add进去（这样就会采用JDK的动态代理了）
 		if (hasReasonableProxyInterface) {
 			// Must allow for introductions; can't just set interfaces to the target's interfaces only.
 			for (Class<?> ifc : targetInterfaces) {
@@ -118,6 +124,7 @@ public class ProxyProcessorSupport extends ProxyConfig implements Ordered, BeanC
 			}
 		}
 		else {
+			// 否则直接采用CGLIB
 			proxyFactory.setProxyTargetClass(true);
 		}
 	}
@@ -129,6 +136,8 @@ public class ProxyProcessorSupport extends ProxyConfig implements Ordered, BeanC
 	 * proxied with its full target class, assuming that as the user's intention.
 	 * @param ifc the interface to check
 	 * @return whether the given interface is just a container callback
+	 *
+	 * InitializingBean...Aware接口的子接口等等这些回调性质的接口
 	 */
 	protected boolean isConfigurationCallbackInterface(Class<?> ifc) {
 		return (InitializingBean.class == ifc || DisposableBean.class == ifc || Closeable.class == ifc ||
@@ -142,6 +151,8 @@ public class ProxyProcessorSupport extends ProxyConfig implements Ordered, BeanC
 	 * proxied with its full target class, assuming that as the user's intention.
 	 * @param ifc the interface to check
 	 * @return whether the given interface is an internal language interface
+	 *
+	 * 接口名称为这些的  也就是spring aop自己的东西
 	 */
 	protected boolean isInternalLanguageInterface(Class<?> ifc) {
 		return (ifc.getName().equals("groovy.lang.GroovyObject") ||

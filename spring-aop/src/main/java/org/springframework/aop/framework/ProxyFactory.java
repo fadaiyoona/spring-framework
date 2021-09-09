@@ -93,6 +93,7 @@ public class ProxyFactory extends ProxyCreatorSupport {
 	 * (if necessary for proxy creation).
 	 * @return the proxy object
 	 */
+	// 创建代理的语句：调用父类ProxyCreatorSupport#createAopProxy 此处就不用再解释了
 	public Object getProxy() {
 		return createAopProxy().getProxy();
 	}
@@ -122,6 +123,7 @@ public class ProxyFactory extends ProxyCreatorSupport {
 	 * @see #ProxyFactory(Class, org.aopalliance.intercept.Interceptor)
 	 */
 	@SuppressWarnings("unchecked")
+	// 主义这是个静态方法，可以一步到位，代理指定的接口
 	public static <T> T getProxy(Class<T> proxyInterface, Interceptor interceptor) {
 		return (T) new ProxyFactory(proxyInterface, interceptor).getProxy();
 	}
@@ -145,6 +147,7 @@ public class ProxyFactory extends ProxyCreatorSupport {
 	 * @param targetSource the TargetSource that the proxy should invoke
 	 * @return the proxy object
 	 */
+	// 注意：若调用此方法生成代理，就直接使用的是CGLIB的方式的
 	public static Object getProxy(TargetSource targetSource) {
 		if (targetSource.getTargetClass() == null) {
 			throw new IllegalArgumentException("Cannot create class proxy for TargetSource with null target class");

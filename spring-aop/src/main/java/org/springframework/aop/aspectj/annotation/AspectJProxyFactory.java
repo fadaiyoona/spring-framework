@@ -52,6 +52,7 @@ public class AspectJProxyFactory extends ProxyCreatorSupport {
 	/** Cache for singleton aspect instances. */
 	private static final Map<Class<?>, Object> aspectCache = new ConcurrentHashMap<>();
 
+	//基于AspectJ时,创建Spring AOP的Advice  下面详说
 	private final AspectJAdvisorFactory aspectFactory = new ReflectiveAspectJAdvisorFactory();
 
 
@@ -88,14 +89,17 @@ public class AspectJProxyFactory extends ProxyCreatorSupport {
 	 * aspects added in this way.
 	 * @param aspectInstance the AspectJ aspect instance
 	 */
+	// 这两个addAspect方法是最重要的：我们可以把一个现有的aspectInstance传进去，当然也可以是一个Class（下面）======
 	public void addAspect(Object aspectInstance) {
 		Class<?> aspectClass = aspectInstance.getClass();
 		String aspectName = aspectClass.getName();
 		AspectMetadata am = createAspectMetadata(aspectClass, aspectName);
+		// 显然这种直接传实例进来的，默认就是单例的。不是单例我们就报错了~~~~
 		if (am.getAjType().getPerClause().getKind() != PerClauseKind.SINGLETON) {
 			throw new IllegalArgumentException(
 					"Aspect class [" + aspectClass.getName() + "] does not define a singleton aspect");
 		}
+		// 这个方法就非常的关键了~~~ Singleton...是它MetadataAwareAspectInstanceFactory的子类
 		addAdvisorsFromAspectInstanceFactory(
 				new SingletonMetadataAwareAspectInstanceFactory(aspectInstance, aspectName));
 	}
@@ -117,7 +121,9 @@ public class AspectJProxyFactory extends ProxyCreatorSupport {
 	 * to the current chain. Exposes any special purpose {@link Advisor Advisors} if needed.
 	 * @see AspectJProxyUtils#makeAdvisorChainAspectJCapableIfNecessary(List)
 	 */
+	// 从切面工厂里，把对应切面实例里面的增强器（通知）都获取到~~~
 	private void addAdvisorsFromAspectInstanceFactory(MetadataAwareAspectInstanceFactory instanceFactory) {
+		// 从切面工厂里，先拿到所有的增强器们~~~
 		List<Advisor> advisors = this.aspectFactory.getAdvisors(instanceFactory);
 		Class<?> targetClass = getTargetClass();
 		Assert.state(targetClass != null, "Unresolvable target class");

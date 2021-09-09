@@ -33,6 +33,10 @@ import org.springframework.aop.Advisor;
  * do so only if you need to introduce more Advisor or Advice types to Spring.
  *
  * @author Rod Johnson
+ *
+ * spring aop框架对BeforeAdvice、AfterAdvice、ThrowsAdvice三种通知类型的支持实际上是借助适配器模式来实现的，
+ * 这样的好处是使得框架允许用户向框架中加入自己想要支持的任何一种通知类型，
+ * AdvisorAdapter是一个适配器接口，它定义了自己支持的Advice类型，并且能把一个Advisor适配成MethodInterceptor（这也是AOP联盟定义的借口），以下是它的定义
  */
 public interface AdvisorAdapter {
 
@@ -45,6 +49,7 @@ public interface AdvisorAdapter {
 	 * @see #getInterceptor(org.springframework.aop.Advisor)
 	 * @see org.springframework.aop.BeforeAdvice
 	 */
+	// 判断此适配器是否支持特定的Advice
 	boolean supportsAdvice(Advice advice);
 
 	/**
@@ -58,6 +63,7 @@ public interface AdvisorAdapter {
 	 * no need to cache instances for efficiency, as the AOP framework
 	 * caches advice chains.
 	 */
+	// 将一个Advisor适配成MethodInterceptor
 	MethodInterceptor getInterceptor(Advisor advisor);
 
 }
