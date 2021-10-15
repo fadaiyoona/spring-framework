@@ -57,6 +57,8 @@ import org.springframework.web.multipart.MultipartResolver;
  * @see #setResolveLazily
  * @see HttpServletRequest#getParts()
  * @see org.springframework.web.multipart.commons.CommonsMultipartResolver
+ *
+ * 是基于 Servlet 3.0来处理 multipart 请求的(基于request.getParts()方法)，使用支持 Servlet 3.0的容器
  */
 public class StandardServletMultipartResolver implements MultipartResolver {
 

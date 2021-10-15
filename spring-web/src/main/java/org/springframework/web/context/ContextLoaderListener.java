@@ -33,6 +33,8 @@ import javax.servlet.ServletContextListener;
  * @since 17.02.2003
  * @see #setContextInitializers
  * @see org.springframework.web.WebApplicationInitializer
+ *
+ * 监听、初始化Spring父容器
  */
 public class ContextLoaderListener extends ContextLoader implements ServletContextListener {
 
@@ -97,6 +99,10 @@ public class ContextLoaderListener extends ContextLoader implements ServletConte
 
 	/**
 	 * Initialize the root web application context.
+	 *
+	 * 执行此监听器的初始化方法（注意：到了此处，就和web.xml方式一模一样了）但是不一样的是，
+	 * 注解驱动的此时候，我们的ContextLoaderListener对象已经持有WebApplicationContext的引用了（但是还没有放进ServletContext里面去，需要注意），
+	 * 所以会稍微有点不一样。
 	 */
 	@Override
 	public void contextInitialized(ServletContextEvent event) {

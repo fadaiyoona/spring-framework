@@ -56,6 +56,7 @@ public abstract class AbstractAnnotationConfigDispatcherServletInitializer
 		Class<?>[] configClasses = getRootConfigClasses();
 		if (!ObjectUtils.isEmpty(configClasses)) {
 			AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+			//配置文件可以有多个  会以累加的形式添加进去
 			context.register(configClasses);
 			return context;
 		}

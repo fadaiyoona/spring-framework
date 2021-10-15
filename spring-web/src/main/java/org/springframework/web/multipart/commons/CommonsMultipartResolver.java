@@ -59,6 +59,8 @@ import org.springframework.web.util.WebUtils;
  * @see #setResolveLazily
  * @see org.apache.commons.fileupload.servlet.ServletFileUpload
  * @see org.apache.commons.fileupload.disk.DiskFileItemFactory
+ *
+ * 使用 commons Fileupload 来处理 multipart 请求，所以在使用时，必须要引入相应的 jar 包
  */
 public class CommonsMultipartResolver extends CommonsFileUploadSupport
 		implements MultipartResolver, ServletContextAware {

@@ -60,7 +60,9 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 
 	@Override
 	public void onStartup(ServletContext servletContext) throws ServletException {
+		// 注册ContextLoaderListener监听器，让它去初始化Spring父容器
 		super.onStartup(servletContext);
+		// 初始化DispatcherServlet、创建子容器
 		registerDispatcherServlet(servletContext);
 	}
 
@@ -74,28 +76,39 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 	 * #customizeRegistration(ServletRegistration.Dynamic)} or
 	 * {@link #createDispatcherServlet(WebApplicationContext)}.
 	 * @param servletContext the context to register the servlet against
+	 *
+	 *                       初始化子容器
 	 */
 	protected void registerDispatcherServlet(ServletContext servletContext) {
+		//Servlet名称 一般用系统默认的即可，否则自己复写此方法也成
 		String servletName = getServletName();
 		Assert.hasLength(servletName, "getServletName() must not return null or empty");
 
+		//创建web的子容器。创建的代码和上面差不多，也是使用调用者提供的配置文件，创建AnnotationConfigWebApplicationContext.  备注：此处不可能为null哦
 		WebApplicationContext servletAppContext = createServletApplicationContext();
 		Assert.notNull(servletAppContext, "createServletApplicationContext() must not return null");
 
+		//创建DispatcherServlet，并且把子容器传进去了。其实就是new一个出来，最后加到容器里，就能够执行一些init初始化方法了~
 		FrameworkServlet dispatcherServlet = createDispatcherServlet(servletAppContext);
 		Assert.notNull(dispatcherServlet, "createDispatcherServlet(WebApplicationContext) must not return null");
+		//同样的 getServletApplicationContextInitializers()一般也为null即可
 		dispatcherServlet.setContextInitializers(getServletApplicationContextInitializers());
 
+		//注册servlet到web容器里面，这样就可以接收请求了
 		ServletRegistration.Dynamic registration = servletContext.addServlet(servletName, dispatcherServlet);
 		if (registration == null) {
 			throw new IllegalStateException("Failed to register servlet with name '" + servletName + "'. " +
 					"Check if there is another servlet registered under the same name.");
 		}
 
+		//1表示立马执行哦
 		registration.setLoadOnStartup(1);
+		//调用者必须实现
 		registration.addMapping(getServletMappings());
+		//默认就是开启了支持异步的
 		registration.setAsyncSupported(isAsyncSupported());
 
+		//处理自定义的Filter进来，一般我们Filter不这么加进来，而是自己@WebFilter，或者借助Spring，  备注：这里添加进来的Filter都仅仅只拦截过滤上面注册的dispatchServlet
 		Filter[] filters = getServletFilters();
 		if (!ObjectUtils.isEmpty(filters)) {
 			for (Filter filter : filters) {
@@ -103,6 +116,7 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 			}
 		}
 
+		//这个很清楚：调用者若相对dispatcherServlet有自己更个性化的参数设置，复写此方法即可
 		customizeRegistration(registration);
 	}
 

@@ -492,22 +492,38 @@ public class DispatcherServlet extends FrameworkServlet {
 	 */
 	@Override
 	protected void onRefresh(ApplicationContext context) {
+		// 初始化Spring MVC的9大组件(至此，才算全部初始化完成了~不容器啊)
 		initStrategies(context);
 	}
 
 	/**
 	 * Initialize the strategy objects that this servlet uses.
 	 * <p>May be overridden in subclasses in order to initialize further strategy objects.
+	 *
+	 * 子类若有需要，还可以复写此方法，去初始化自己的其余组件（比如要和它集成等等）
 	 */
 	protected void initStrategies(ApplicationContext context) {
+		// MultipartResolver 用于处理文件上传，当收到请求时 DispatcherServlet#checkMultipart() 方法会调用 MultipartResolver#isMultipart() 方法判断请求中是否包含文件。
+		// 如果请求数据中包含文件，则调用 MultipartResolver#resolveMultipart() 方法对请求的数据进行解析。
+		// 然后将文件数据解析成 MultipartFile 并封装在 MultipartHttpServletRequest(继承了 HttpServletRequest) 对象中，最后传递给 Controller
 		initMultipartResolver(context);
+
+		// 其主要作用在于根据不同的用户区域展示不同的视图，而用户的区域也称为Locale，该信息是可以由前端直接获取的。
+		// 通过这种方式，可以实现一种国际化的目的，比如针对美国用户可以提供一个视图，而针对中国用户则可以提供另一个视图。
 		initLocaleResolver(context);
+
 		initThemeResolver(context);
+
 		initHandlerMappings(context);
+
 		initHandlerAdapters(context);
+
 		initHandlerExceptionResolvers(context);
+
 		initRequestToViewNameTranslator(context);
+
 		initViewResolvers(context);
+
 		initFlashMapManager(context);
 	}
 

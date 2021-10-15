@@ -50,6 +50,8 @@ import org.springframework.lang.Nullable;
  * @see org.springframework.context.i18n.LocaleContextHolder
  * @see org.springframework.web.servlet.support.RequestContext#getLocale
  * @see org.springframework.web.servlet.support.RequestContextUtils#getLocale
+ * 其主要作用在于根据不同的用户区域展示不同的视图，而用户的区域也称为Locale，该信息是可以由前端直接获取的。
+ * 通过这种方式，可以实现一种国际化的目的，比如针对美国用户可以提供一个视图，而针对中国用户则可以提供另一个视图。
  */
 public interface LocaleResolver {
 
@@ -58,6 +60,8 @@ public interface LocaleResolver {
 	 * Can return a default locale as fallback in any case.
 	 * @param request the request to resolve the locale for
 	 * @return the current locale (never {@code null})
+	 *
+	 * 根据request对象根据指定的方式获取一个Locale，如果没有获取到，则使用用户指定的默认的Locale
 	 */
 	Locale resolveLocale(HttpServletRequest request);
 
@@ -68,6 +72,8 @@ public interface LocaleResolver {
 	 * @param locale the new locale, or {@code null} to clear the locale
 	 * @throws UnsupportedOperationException if the LocaleResolver
 	 * implementation does not support dynamic changing of the locale
+	 * 用于实现Locale的切换。比如SessionLocaleResolver获取Locale的方式是从session中读取，但如果
+	//户想要切换其展示的样式(由英文切换为中文)，那么这里的setLocale()方法就提供了这样一种可能
 	 */
 	void setLocale(HttpServletRequest request, @Nullable HttpServletResponse response, @Nullable Locale locale);
 

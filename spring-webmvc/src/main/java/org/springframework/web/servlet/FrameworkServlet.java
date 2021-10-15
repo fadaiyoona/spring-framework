@@ -138,6 +138,7 @@ import org.springframework.web.util.WebUtils;
  * @see #setContextConfigLocation
  * @see #setContextInitializerClasses
  * @see #setNamespace
+ * 初始化了WebApplicationContext
  */
 @SuppressWarnings("serial")
 public abstract class FrameworkServlet extends HttpServletBean implements ApplicationContextAware {
@@ -527,7 +528,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		long startTime = System.currentTimeMillis();
 
 		try {
+			// 这是重点，开始初始化这个子容器了
 			this.webApplicationContext = initWebApplicationContext();
+			//继续留一个口，给子类去复写初始化所需要的操作  一般都为空实现即可，除非自己要复写DispatcherServlet，做自己需要做的事
 			initFrameworkServlet();
 		}
 		catch (ServletException | RuntimeException ex) {
@@ -535,6 +538,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			throw ex;
 		}
 
+		//当我们看到这句日志，就能知道dispatcherServlet已经初始化完成，web子容器也就初始化完成了
 		if (logger.isDebugEnabled()) {
 			String value = this.enableLoggingRequestDetails ?
 					"shown which may lead to unsafe logging of potentially sensitive data" :
@@ -556,12 +560,17 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * @see #FrameworkServlet(WebApplicationContext)
 	 * @see #setContextClass
 	 * @see #setContextConfigLocation
+	 *
+	 * 创建一个web子容器，并且和上面Spring已经创建好了的父容器关联上
 	 */
 	protected WebApplicationContext initWebApplicationContext() {
+		// 从ServletContext中把上面已经创建好的根容器拿到手
 		WebApplicationContext rootContext =
 				WebApplicationContextUtils.getWebApplicationContext(getServletContext());
 		WebApplicationContext wac = null;
 
+		//但是，但是，但是此处需要注意了，因为本处我们是注解驱动的，在上面已经看到了，我们new DispatcherServlet出来的时候，已经传入了根据配置文件创建好的子容器web容器，
+		// 因此此处肯定是不为null的，因此此处会进来，和上面一样，完成容器的初始化、刷新工作，因此就不再解释了~
 		if (this.webApplicationContext != null) {
 			// A context instance was injected at construction time -> use it
 			wac = this.webApplicationContext;
@@ -573,12 +582,16 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 					if (cwac.getParent() == null) {
 						// The context instance was injected without an explicit parent -> set
 						// the root application context (if any; may be null) as the parent
+
+						//此处把根容器，设置为自己的父容器
 						cwac.setParent(rootContext);
 					}
+					//根据绑定的配置，初始化、刷新容器
 					configureAndRefreshWebApplicationContext(cwac);
 				}
 			}
 		}
+		//若是web.xml方式，会走这里，进而走findWebApplicationContext(),因此此方法，我会在下面详细去说明，这里占时略过
 		if (wac == null) {
 			// No context instance was injected at construction time -> see if one
 			// has been registered in the servlet context. If one exists, it is assumed
@@ -591,17 +604,23 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			wac = createWebApplicationContext(rootContext);
 		}
 
+		// 此处需要注意了：下面有解释，refreshEventReceived和onRefresh方法，不会重复执行~
 		if (!this.refreshEventReceived) {
 			// Either the context is not a ConfigurableApplicationContext with refresh
 			// support or the context injected at construction time had already been
 			// refreshed -> trigger initial onRefresh manually here.
 			synchronized (this.onRefreshMonitor) {
+				// 初始化Spring MVC的组件
 				onRefresh(wac);
 			}
 		}
 
+		//我们是否需要吧我们的容器发布出去，作为ServletContext的一个属性值呢？默认值为true哦，一般情况下我们就让我true就好
 		if (this.publishContext) {
 			// Publish the context as a servlet context attribute.
+			// 这个attr的key的默认值，就是FrameworkServlet.SERVLET_CONTEXT_PREFIX，保证了全局唯一性
+			// 这么一来，我们的根容器、web子容器其实就都放进ServletContext上下文里了，拿取都非常的方便了。
+			// 只是我们一般拿这个容器的情况较少，一般都是拿跟容器，比如那个工具类就是获取根容器的~~~~~~
 			String attrName = getServletContextAttributeName();
 			getServletContext().setAttribute(attrName, wac);
 		}
