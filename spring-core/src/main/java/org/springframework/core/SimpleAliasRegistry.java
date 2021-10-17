@@ -39,6 +39,8 @@ import org.springframework.util.StringValueResolver;
  * @author Juergen Hoeller
  * @author Qimiao Chen
  * @since 2.5.2
+ *
+ * 主要使用map作为alias的缓存，并对接口AliasRegistry进行实现
  */
 public class SimpleAliasRegistry implements AliasRegistry {
 
@@ -55,6 +57,7 @@ public class SimpleAliasRegistry implements AliasRegistry {
 		Assert.hasText(alias, "'alias' must not be empty");
 		synchronized (this.aliasMap) {
 			if (alias.equals(name)) {
+				// 如果BeanName与alias相同的话，不记录alias，并删除对应的alias
 				this.aliasMap.remove(alias);
 				if (logger.isDebugEnabled()) {
 					logger.debug("Alias definition '" + alias + "' ignored since it points to same name");
@@ -67,6 +70,7 @@ public class SimpleAliasRegistry implements AliasRegistry {
 						// An existing alias - no need to re-register
 						return;
 					}
+					// 如果alias不允许被覆盖，则抛出异常
 					if (!allowAliasOverriding()) {
 						throw new IllegalStateException("Cannot define alias '" + alias + "' for name '" +
 								name + "': It is already registered for name '" + registeredName + "'.");
@@ -76,6 +80,7 @@ public class SimpleAliasRegistry implements AliasRegistry {
 								registeredName + "' with new target name '" + name + "'");
 					}
 				}
+				// 当A->B存在是，若再次出现A->C->B时候，会抛出异常
 				checkForAliasCircle(name, alias);
 				this.aliasMap.put(alias, name);
 				if (logger.isTraceEnabled()) {

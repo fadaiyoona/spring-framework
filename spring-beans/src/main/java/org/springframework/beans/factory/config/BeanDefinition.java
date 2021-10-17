@@ -37,6 +37,14 @@ import org.springframework.lang.Nullable;
  * @see ConfigurableListableBeanFactory#getBeanDefinition
  * @see org.springframework.beans.factory.support.RootBeanDefinition
  * @see org.springframework.beans.factory.support.ChildBeanDefinition
+ *
+ * BeanDefinition是一个接口，在spring中存在三种实现，RootBeanDefinition、ChildBeanDefinition、GenericBeanDefinition
+ * 三种实现均继承了AbstractBeanDefinition
+ * BeanDefinition和<bean></bean>中的属性是一一对应的
+ *
+ * RootBeanDefinition是最常用的实现类
+ * ChildBeanDefinition子bean的表示
+ * GenericBeanDefinition是自2.5版本以后新加入的bean文件配置属性定义类，是一站式服务类
  */
 public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 
