@@ -613,7 +613,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Eagerly cache singletons to be able to resolve circular references
 		// even when triggered by lifecycle interfaces like BeanFactoryAware.
-		//如果当前bean是单例，且支持循环依赖，且当前bean正在创建，通过往singletonFactories添加一个objectFactory，
+		//如果当前bean是单例，且支持循环依赖，且当前bean正在创建(一定是要在创建中的bean，才会去尝试解决循环依赖)，
+		// 通过往singletonFactories添加一个objectFactory，
 		// 这样后期如果有其他bean依赖该bean 可以从singletonFactories获取到bean
 		//getEarlyBeanReference可以对返回的bean进行修改，这边目前除了可能会返回动态代理对象 其他的都是直接返回bean
 		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
@@ -656,8 +657,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// 分别从singletonObjects和earlySingletonObjects获取对象   这里依然是处理循环依赖相关问题的
 		if (earlySingletonExposure) {
 			Object earlySingletonReference = getSingleton(beanName, false);
-			//如果获取到对象了
+			// 在正常情况下，此对象为null，即不存在循环检测。而在循环引用中，此对象能够被取出来。
 			if (earlySingletonReference != null) {
+				// 判断这个对象和当前通过beanPostProcessor处理过的对象是否相同，如果相同，表示对象没有经过修改，即A=A-，那么循环引用成立。无需处理
 				if (exposedObject == bean) {
 					exposedObject = earlySingletonReference;
 				}

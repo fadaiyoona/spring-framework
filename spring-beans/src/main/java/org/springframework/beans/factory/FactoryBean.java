@@ -61,6 +61,11 @@ import org.springframework.lang.Nullable;
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.aop.framework.ProxyFactoryBean
  * @see org.springframework.jndi.JndiObjectFactoryBean
+ *
+ * 一般情况下，Spring通过反射机制利用bean的class属性指定实现类来实例化bean。
+ * 在某些情况下，实例化bean过程比较复杂，这是采用编码的方式可能会得到一个简单的方案。
+ * Spring为此提供了这个工厂类接口，用户可以通过实现该接口定制实例化bean的逻辑。
+ * 它们隐藏了实例化的细节，给上层应用带来了便利。
  */
 public interface FactoryBean<T> {
 
@@ -91,6 +96,8 @@ public interface FactoryBean<T> {
 	 * @return an instance of the bean (can be {@code null})
 	 * @throws Exception in case of creation errors
 	 * @see FactoryBeanNotInitializedException
+	 *
+	 * 返回由FactoryBean创建的bean实例，如果isSingleton()返回true，该实例会放到Spring容器中单实例缓存池中
 	 */
 	@Nullable
 	T getObject() throws Exception;
@@ -113,6 +120,8 @@ public interface FactoryBean<T> {
 	 * @return the type of object that this FactoryBean creates,
 	 * or {@code null} if not known at the time of the call
 	 * @see ListableBeanFactory#getBeansOfType
+	 *
+	 * 返回FactoryBean创建的bean类型
 	 */
 	@Nullable
 	Class<?> getObjectType();
@@ -141,6 +150,8 @@ public interface FactoryBean<T> {
 	 * @return whether the exposed object is a singleton
 	 * @see #getObject()
 	 * @see SmartFactoryBean#isPrototype()
+	 *
+	 * 返回由FactoryBean创建的bean实例的作用于是singleton还是prototype
 	 */
 	default boolean isSingleton() {
 		return true;
