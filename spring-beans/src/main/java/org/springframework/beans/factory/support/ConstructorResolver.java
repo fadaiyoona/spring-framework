@@ -122,6 +122,38 @@ class ConstructorResolver {
 	 * @param explicitArgs argument values passed in programmatically via the getBean method,
 	 * or {@code null} if none (-> use constructor argument values from bean definition)
 	 * @return a BeanWrapper for the new instance
+	 *
+	 * 这个方法处理的事情确实过多了，不符合spring的风格，表示不是很理解。正常按照下面的几个步骤，都可以分成3个方法来分担这些事情了。可能是因为确定构造函数、构造函数参数的相关度太大了。。？？
+	 *
+	 * 1、构造参数的确定。
+	 * 	1.1、根据explicitArgs参数判断：
+	 * 		如果传入的参数explicitArgs不为空，那便可以直接确定参数，因为explicitArgs参数是在调用Bean的时候用户指定的，在BeanFactory类中存在这一的方法：
+	 * 			Object getBean(String name, Object... args) throws BeansException
+	 * 		在获取bean的时候，用户不但可以指定bean的名称还可以指定bean所对应类的构造函数或者工厂方法的方法参数，主要用于静态工厂方法的调用，而这里是需要给定完全匹配的参数的，
+	 * 		所以，便可以判断，如果传入参数explicitArgs不为空，则可以确定构造函数参数就是它。
+	 * 	1.2、缓存中获取。
+	 * 		除此之外，确定参数的办法如果之前已经分析过，也就是说构造函数参数已经积累在缓存中，那么便可以直接拿来使用。而且，这里要提到得失，在缓存中缓存的可能是参数的最终类型也可能是参数的厨师类型，例如：
+	 * 		构造函数参数要求的是int类型，但是原始的参数值可能是String类型的"1"，那么即使在缓存中得到了参数，也需要经过类型转换器的过滤以确保参数类型与对应的构造函数参数类型完全对应。
+	 *  1.3、配置中获取。
+	 *  	如果不能根据传入的参数explicitArgs确定构造函数的参数，也无法在缓存中得到相关信息，那么只能开始新一轮的分析了。
+	 *  	分析从获取配置的构造函数信息开始，经过之前的分析，我们知道，Spring中配置文件中的信息经过转换都会通过BeanDefinition实例承载，也就是参数mdb中包含，那么可以通过调用mdb.getConstructorArgumentValues()
+	 *  	来获取配置的构造函数信息。有了配置中的信息便可以获取对应的参数值信息了，获取参数值的信息包括直接指定值，
+	 *  	如：直接指定构造函数中某个值原始类型String类型，或者是一个对其他bean的引用，而这一处理委托给resolveConstructorArguments方法，并返回能解析到的参数的个数
+	 *
+	 * 2、构造函数的确定
+	 * 		经过了第一步后已经确定了构造函数的参数，杰西莱的任务就是根据构造函数参数在所有构造函数中锁定对应的构造函数，而匹配的方法就是根据参数个数匹配，
+	 * 	所以在匹配之前需要先对构造函数按照public构造函数优先参数数量降序、非public构造函数参数数量降序。这样可以在遍历的情况下循环判断排在后面的构造函数参数个数是否符合条件。
+	 * 		由于配置中并不是唯一限制使用参数位置索引的方式去创建的，同样还支持指定参数名称进行设定参数值的情况，那么这种情况就需要首先确定构造函数中的参数名称。
+	 * 		获取参数名称有两种方式，一种是通过注解的方式直接获取，另一种就是使用Spring中提供的工具类ParameterNameDiscoverer来获取。
+	 * 	构造函数、参数名称、参数类型、参数值都确定后就可以锁定构造函数以及转换对应的参数类型了。
+	 *
+	 * 3、根据确定的构造函数转换对应的参数类型。
+	 * 		主要是使用Spring中提供的类型转换器或者用户提供的自定义类型转换器进行转换。
+	 *
+	 * 4、构造函数不确定性的验证。
+	 * 		当然，有时候即使构造函数、参数名称、参数类型、参数值都确定后也不一定会直接锁定构造函数，不同构造函数的参数为父子关系，所以Spring在最后又做了一次验证。
+	 *
+	 * 5、根据实例化策略以及得到的构造函数及构造函数参数实例化Bean。
 	 */
 	public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
 			@Nullable Constructor<?>[] chosenCtors, @Nullable Object[] explicitArgs) {
@@ -131,17 +163,21 @@ class ConstructorResolver {
 		// initBeanWrapper做了一些事，比如注册解析器、value解析器等等
 		this.beanFactory.initBeanWrapper(bw);
 
+		// 确定出来的构造函数
 		Constructor<?> constructorToUse = null;
+		// 持有最终spring解析完构造器参数自动获取到的Bean参数
 		ArgumentsHolder argsHolderToUse = null;
+		// 确定出来的构造函数参数
 		Object[] argsToUse = null;
 
-		//如果构造参数不为空就直接使用这些参数即可
+		// explicitArgs通过getBean方法传入，如果调用getBean方法时候指定方法参数那么直接使用
 		if (explicitArgs != null) {
 			argsToUse = explicitArgs;
 		}
 		// 否则构造函数的入参，交给Spring处理。它会去容器里拿~~~~~
 		else {
 			Object[] argsToResolve = null;
+			// 尝试从缓存中获取
 			synchronized (mbd.constructorArgumentLock) {
 				//获取已缓存解析的构造函数或工厂方法（resolvedConstructorOrFactoryMethod----用于缓存已解析的构造函数或工厂方法）
 				constructorToUse = (Constructor<?>) mbd.resolvedConstructorOrFactoryMethod;
@@ -157,6 +193,8 @@ class ConstructorResolver {
 			}
 			// 如果上面没有解析过，显然这里参数就是null了,argsToUse也就还为null Spring下面继续解析
 			if (argsToResolve != null) {
+				// 如果缓存中存在，解析参数类型，如给定方法的构造函数A(int, int)则通过此方法后就会把配置中("1", "1")转换成(1, 1)
+				// 缓存中的值可能是原始值，也可能是最终值(因为可能是已经解析过的值)
 				argsToUse = resolvePreparedArguments(beanName, mbd, bw, constructorToUse, argsToResolve);
 			}
 		}
@@ -164,11 +202,12 @@ class ConstructorResolver {
 		//如果缓存的构造器不存在，就说明没有bean进行过解析，需要去关联对应的bean的构造器
 		if (constructorToUse == null || argsToUse == null) {
 			// Take specified constructors, if any.
-			// 我们的传值chosenCtors 显然不为null，所以此值为false
+			// 再获取一次候选构造函数，保证候选构造函数不为空，获取不到则要抛出异常了。
 			Constructor<?>[] candidates = chosenCtors;
 			if (candidates == null) {
 				Class<?> beanClass = mbd.getBeanClass();
 				try {
+					// 如果候选构造函数为空，则从bean class中取申明的构造函数
 					candidates = (mbd.isNonPublicAccessAllowed() ?
 							beanClass.getDeclaredConstructors() : beanClass.getConstructors());
 				}
@@ -179,9 +218,10 @@ class ConstructorResolver {
 				}
 			}
 
-			// 唯一构造函数，并且构造函数没有参数，才会通过此分支进行实例化bw
+			// 唯一构造函数，并且构造函数没有参数，才会通过此分支进行实例化bw(旧版本没有这段逻辑，应该是多数情况都是这样，可以提升性能)
 			if (candidates.length == 1 && explicitArgs == null && !mbd.hasConstructorArgumentValues()) {
 				Constructor<?> uniqueCandidate = candidates[0];
+				// 得保证构造函数的参数数量，跟确定的构造函数参数数量相等，都是0
 				if (uniqueCandidate.getParameterCount() == 0) {
 					synchronized (mbd.constructorArgumentLock) {
 						mbd.resolvedConstructorOrFactoryMethod = uniqueCandidate;
@@ -194,7 +234,6 @@ class ConstructorResolver {
 			}
 
 			// Need to resolve the constructor.
-			// 我们的传值chosenCtors 显然不为null，所以此值为true
 			boolean autowiring = (chosenCtors != null ||
 					mbd.getResolvedAutowireMode() == AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR);
 			ConstructorArgumentValues resolvedValues = null;
@@ -206,14 +245,15 @@ class ConstructorResolver {
 				minNrOfArgs = explicitArgs.length;
 			}
 			else {
-				// 这里相当于要解析出构造函数的参数了
+				// 提取配置的构造函数参数，这里相当于要解析出构造函数的参数了
 				// 解析对应的构造参数然后添加到ConstructorArgumentValues中
 				ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
+				// 用于承载解析后的构造函数参数的值
 				resolvedValues = new ConstructorArgumentValues();
+				// 能解析到的参数个数
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}
 
-			// 这个构造器排序有点意思
 			//按照访问方式和数量对构造器进行排序；public>protect>private，在同为public时构造器入参多的排在前面
 			// 所以排在第一位的，是public的，参数最多的构造器
 			AutowireUtils.sortConstructors(candidates);
@@ -226,7 +266,8 @@ class ConstructorResolver {
 			for (Constructor<?> candidate : candidates) {
 				int parameterCount = candidate.getParameterCount();
 
-				// constructorToUse不为null(表示已经找到了合适构造器)，但是呢，连参数个数的长度都对应不上，那就直接break，后面的构造器全都不用看了
+				// constructorToUse不为null(表示已经找到了合适构造器)，
+				// 但是呢，连参数个数的长度都对应不上，那就直接break，后面的构造器全都不用看了（因为已经按照参数个数降序排序了）
 				if (constructorToUse != null && argsToUse != null && argsToUse.length > parameterCount) {
 					// Already found greedy constructor that can be satisfied ->
 					// do not look any further, there are only less greedy constructors left.
@@ -242,6 +283,7 @@ class ConstructorResolver {
 				// 拿到构造器参数的类型们
 				Class<?>[] paramTypes = candidate.getParameterTypes();
 				if (resolvedValues != null) {
+					// Spring都是把大概率的逻辑分支放在第一个判断中，这点也是一个好的代码习惯
 					try {
 						//兼容JDK6提供的@ConstructorProperties这个注解，如果它标注了参数名，那就以它的名字为准
 						//@ConstructorProperties的作用=======》构造函数上的注解，显示该构造函数的参数如何与构造对象的getter方法相对应
@@ -277,6 +319,7 @@ class ConstructorResolver {
 					if (parameterCount != explicitArgs.length) {
 						continue;
 					}
+					// getBean传入的构造参数不为空的情况
 					argsHolder = new ArgumentsHolder(explicitArgs);
 				}
 
@@ -284,10 +327,11 @@ class ConstructorResolver {
 				//这个属性默认值是true，在大部分情况下都是使用[宽松模式]，即使多个构造函数的参数数量相同、类型存在父子类、接口实现类关系也能正常创建bean。
 				// false表示严格模式。与上面相反
 				// typeDiffWeight:返回不同的个数的权重（权重概念？）
+				// 探测是否有不确定性的构造函数存在，例如不同构造函数的参数为父子关系
 				int typeDiffWeight = (mbd.isLenientConstructorResolution() ?
 						argsHolder.getTypeDifferenceWeight(paramTypes) : argsHolder.getAssignabilityWeight(paramTypes));
 				// Choose this constructor if it represents the closest match.
-				// 根据权重，选择一个最为合适的构造器
+				// 根据权重，选择一个最为合适的构造器，如果它代表着当前最接近的匹配则选择作为构造函数
 				if (typeDiffWeight < minTypeDiffWeight) {
 					// 大都进这里来，然后是木有ambiguousConstructors 的
 					constructorToUse = candidate;
@@ -326,6 +370,7 @@ class ConstructorResolver {
 			}
 
 			if (explicitArgs == null && argsHolderToUse != null) {
+				// 将解析的构造器加入缓存
 				argsHolderToUse.storeCache(mbd, constructorToUse);
 			}
 		}

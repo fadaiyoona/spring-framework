@@ -69,6 +69,8 @@ public interface AutowireCapableBeanFactory extends BeanFactory {
 	 * @see #createBean
 	 * @see #autowire
 	 * @see #autowireBeanProperties
+	 *
+	 * 默认类型是spring是不会帮你做属性值注入的，目前注解方式启动编写的bean都是这个模式，所以我们都是加@Autowired或者@Resource
 	 */
 	int AUTOWIRE_NO = 0;
 
@@ -78,6 +80,9 @@ public interface AutowireCapableBeanFactory extends BeanFactory {
 	 * @see #createBean
 	 * @see #autowire
 	 * @see #autowireBeanProperties
+	 *
+	 * 这种是通过属性名字来注入，不过需要提供set方法，如果没有提供set方法也是空
+	 * 在自动注入的属性上面可以不加注解 @Autowried或者@Resource
 	 */
 	int AUTOWIRE_BY_NAME = 1;
 
@@ -87,6 +92,8 @@ public interface AutowireCapableBeanFactory extends BeanFactory {
 	 * @see #createBean
 	 * @see #autowire
 	 * @see #autowireBeanProperties
+	 * 这种是通过属性类型来注入，不过需要提供set方法，如果没有提供set方法也是空
+	 * 在自动注入的属性上面可以不加注解 @Autowried或者@Resource
 	 */
 	int AUTOWIRE_BY_TYPE = 2;
 
@@ -95,6 +102,8 @@ public interface AutowireCapableBeanFactory extends BeanFactory {
 	 * can be satisfied (involves resolving the appropriate constructor).
 	 * @see #createBean
 	 * @see #autowire
+	 *
+	 * 通过构造器注入：如果没有通过@Autowried或者@Resource注解的话，Spring只能通过在构造器中才能给属性赋上值
 	 */
 	int AUTOWIRE_CONSTRUCTOR = 3;
 

@@ -449,7 +449,8 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 	@Override
 	public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) {
-		// 找到Bean组件的InjectionMetadata，里面包含AutowiredFieldElement（主要处理类）
+		// 找到Bean组件的InjectionMetadata，里面包含AutowiredFieldElement（主要处理类），
+		// 这里的metadata在org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessMergedBeanDefinition中就已经解析好了
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, bean.getClass(), pvs);
 		try {
 			// 通过InjectionMetadata，进行注入

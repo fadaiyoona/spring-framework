@@ -124,6 +124,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 
 	/**
 	 * 用来保存正在创建Bean的名称
+	 *
+	 * 在getSingleton(String beanName, ObjectFactory singletonFactory)函数的beforeSingletonCreation和afterSingletonCreation中分别进行了add、remove
 	 */
 	/** Names of beans that are currently in creation. */
 	private final Set<String> singletonsCurrentlyInCreation =
