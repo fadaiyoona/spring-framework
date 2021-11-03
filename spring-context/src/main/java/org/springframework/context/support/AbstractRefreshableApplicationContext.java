@@ -64,9 +64,11 @@ import org.springframework.lang.Nullable;
  */
 public abstract class AbstractRefreshableApplicationContext extends AbstractApplicationContext {
 
+	/** 是否允许覆盖同名称的不同定义的对象 */
 	@Nullable
 	private Boolean allowBeanDefinitionOverriding;
 
+	/** 是否允许bean之间存在循环依赖 */
 	@Nullable
 	private Boolean allowCircularReferences;
 

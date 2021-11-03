@@ -33,6 +33,8 @@ import org.springframework.util.Assert;
  *
  * @author Rod Johnson
  * @author Juergen Hoeller
+ *
+ * 主要用于程序测试，它允许通过编程的方式提供国际化信息
  */
 public class StaticMessageSource extends AbstractMessageSource {
 

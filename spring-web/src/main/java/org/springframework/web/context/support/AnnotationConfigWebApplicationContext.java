@@ -196,8 +196,9 @@ public class AnnotationConfigWebApplicationContext extends AbstractRefreshableWe
 	 */
 	@Override
 	protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) {
-		// 初始化这个脚手架 其实就是直接new出实例。具体做的工作，下面有相关博文链接
+		// 初始化这个脚手架 其实就是直接new出实例。然后把一些功能上需要的BeanPostProcessor组件先注册好bean定义
 		AnnotatedBeanDefinitionReader reader = getAnnotatedBeanDefinitionReader(beanFactory);
+		// ComponentScan注解扫描
 		ClassPathBeanDefinitionScanner scanner = getClassPathBeanDefinitionScanner(beanFactory);
 
 		// 生成Bean的名称的生成器，如果自己没有setBeanNameGenerator（可以自定义）,这里目前为null

@@ -26,6 +26,8 @@ import org.springframework.beans.BeansException;
  *
  * @author Juergen Hoeller
  * @since 1.0.1
+ *
+ * 销毁bean的后置处理器
  */
 public interface DestructionAwareBeanPostProcessor extends BeanPostProcessor {
 
@@ -40,6 +42,8 @@ public interface DestructionAwareBeanPostProcessor extends BeanPostProcessor {
 	 * @throws org.springframework.beans.BeansException in case of errors
 	 * @see org.springframework.beans.factory.DisposableBean#destroy()
 	 * @see org.springframework.beans.factory.support.AbstractBeanDefinition#setDestroyMethodName(String)
+	 *
+	 * 销毁bean的时候调用
 	 */
 	void postProcessBeforeDestruction(Object bean, String beanName) throws BeansException;
 

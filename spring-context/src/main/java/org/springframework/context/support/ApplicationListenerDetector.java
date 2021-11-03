@@ -42,6 +42,8 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Juergen Hoeller
  * @since 4.3.4
+ *
+ * bean初始化完成之后，检查是否实现了ApplicationListener，如果实现了，说明是事件监听器，那么加入到监听器中，这样就可以进行广播事件了。
  */
 class ApplicationListenerDetector implements DestructionAwareBeanPostProcessor, MergedBeanDefinitionPostProcessor {
 

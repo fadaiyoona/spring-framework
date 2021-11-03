@@ -159,7 +159,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	/** Resolver to use for checking if a bean definition is an autowire candidate. */
 	private AutowireCandidateResolver autowireCandidateResolver = SimpleAutowireCandidateResolver.INSTANCE;
 
-	/** Map from dependency type to corresponding autowired value. */
+	/**
+	 * Map from dependency type to corresponding autowired value.
+	 *
+	 * 注册类型对应的依赖
+	 */
 	private final Map<Class<?>, Object> resolvableDependencies = new ConcurrentHashMap<>(16);
 
 	/** Map of bean definition objects, keyed by bean name. */
@@ -180,11 +184,19 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	/** List of names of manually registered singletons, in registration order. */
 	private volatile Set<String> manualSingletonNames = new LinkedHashSet<>(16);
 
-	/** Cached array of bean definition names in case of frozen configuration. */
+	/**
+	 * Cached array of bean definition names in case of frozen configuration.
+	 *
+	 * 缓存冻结的bean定义的名称
+	 */
 	@Nullable
 	private volatile String[] frozenBeanDefinitionNames;
 
-	/** Whether bean definition metadata may be cached for all beans. */
+	/**
+	 * Whether bean definition metadata may be cached for all beans.
+	 *
+	 * 是否冻结bean定义的名称
+	 */
 	private volatile boolean configurationFrozen;
 
 

@@ -149,16 +149,32 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	@Nullable
 	private TypeConverter typeConverter;
 
-	/** String resolvers to apply e.g. to annotation attribute values. */
+	/**
+	 * String resolvers to apply e.g. to annotation attribute values.
+	 *
+	 * 字符串解析器，可以解析Spel表达式，${}、#{}、等等，通过表达式获取配置文件中的具体值等
+	 */
 	private final List<StringValueResolver> embeddedValueResolvers = new CopyOnWriteArrayList<>();
 
-	/** BeanPostProcessors to apply. */
+	/**
+	 * BeanPostProcessors to apply.
+	 *
+	 * Bean的所有后置处理器
+	 */
 	private final List<BeanPostProcessor> beanPostProcessors = new CopyOnWriteArrayList<>();
 
-	/** Indicates whether any InstantiationAwareBeanPostProcessors have been registered. */
+	/**
+	 * Indicates whether any InstantiationAwareBeanPostProcessors have been registered.
+	 *
+	 * 是否有InstantiationAwareBeanPostProcessor类型的BeanPostProcessor
+	 */
 	private volatile boolean hasInstantiationAwareBeanPostProcessors;
 
-	/** Indicates whether any DestructionAwareBeanPostProcessors have been registered. */
+	/**
+	 * Indicates whether any DestructionAwareBeanPostProcessors have been registered.
+	 *
+	 * 是否有DestructionAwareBeanPostProcessor类型的BeanPostProcessor
+	 */
 	private volatile boolean hasDestructionAwareBeanPostProcessors;
 
 	/** Map from scope identifier String to corresponding Scope. */

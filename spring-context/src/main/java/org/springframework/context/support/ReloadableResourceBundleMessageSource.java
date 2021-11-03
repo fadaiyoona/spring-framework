@@ -84,6 +84,8 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.core.io.DefaultResourceLoader
  * @see ResourceBundleMessageSource
  * @see java.util.ResourceBundle
+ *
+ * 提供了定时刷新功能，允许在不重启系统的情况下，更新资源的信息。
  */
 public class ReloadableResourceBundleMessageSource extends AbstractResourceBasedMessageSource
 		implements ResourceLoaderAware {

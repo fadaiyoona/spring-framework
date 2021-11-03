@@ -121,6 +121,7 @@ import org.springframework.util.StringUtils;
  * @see BeanDefinitionRegistry
  *
  * 综合AbstractBeanFactory并对接口AutowireCapableBeanFactory进行实现
+ * 在AbstractBeanFactory的基础上，提供创建bean、自动注入、初始化以及应用bean的后处理器
  */
 public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFactory
 		implements AutowireCapableBeanFactory {
@@ -144,12 +145,16 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	/**
 	 * Dependency types to ignore on dependency check and autowire, as Set of
 	 * Class objects: for example, String. Default is none.
+	 *
+	 * 忽略的自动装配
 	 */
 	private final Set<Class<?>> ignoredDependencyTypes = new HashSet<>();
 
 	/**
 	 * Dependency interfaces to ignore on dependency check and autowire, as Set of
 	 * Class objects. By default, only the BeanFactory interface is ignored.
+	 *
+	 * 忽略的自动装配
 	 */
 	private final Set<Class<?>> ignoredDependencyInterfaces = new HashSet<>();
 

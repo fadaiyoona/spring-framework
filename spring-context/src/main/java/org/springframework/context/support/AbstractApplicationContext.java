@@ -681,8 +681,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
-			// 获取新的beanFactory
-			// 销毁原有beanFactory
+			// 获取新的beanFactory、销毁原有beanFactory
 			// 为每个bean生成BeanDefinition等  注意，此处是获取新的，销毁旧的，这就是刷新的意义
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
@@ -709,12 +708,30 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
-				// 初始化国际化工具类MessageSource
+				// 初始化i18n国际化工具类MessageSource
 				// 初始化消息源。向容器里注册一个一个事件源的单例Bean：MessageSource
+				// JDK的java.util包中提供了几个支持本地化的格式化操作工具了：NumberFormat、DateFormat、MessageFormat，
+				// 而在Spring中的国际化资源操作也无非是对于这些类的封装操作、具体如何创建MessageSource这个bean、及初始化文件，这些倒是没有深入了解
+				/**
+				 * 1、定义资源文件
+				 * messages.properties(默认：英文），内容如下：
+				 * test=test
+				 * messages_zh_CN.properties（简体中文），内容如下：
+				 * test=测试
+				 *
+				 * 2、定义bean
+				 * <bean id="messageSource", class="org.springframework.context.support.ResourceBundleMessageSource">
+				 *    <property name="basenames">
+				 *        <list>
+				 *            <value>test/messages</value>
+				 *        </list>
+				 *    </property>
+				 * </bean>
+				 */
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
-				// 初始化事件广播器
+				// 初始化事件多播器
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
@@ -841,15 +858,25 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * Configure the factory's standard context characteristics,
 	 * such as the context's ClassLoader and post-processors.
 	 * @param beanFactory the BeanFactory to configure
+	 *
+	 * 1、增加对SpEL语言的支持
+	 * 2、增加对属性编辑器的支持
+	 * 3、增加对一些内置类，比如EnvironmentAware、MessageSourceAware的信息注入
+	 * 4、设置了依赖功能可忽略的接口
+	 * 5、注册一些固定依赖的属性
+	 * 6、增加AspectJ的支持
+	 * 7、蒋相关环境变量及属性注册以单例模式注册
 	 */
 	protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 		// Tell the internal bean factory to use the context's class loader etc.
 		// 设置beanFactory的classLoader为当前context的classLoader
 		beanFactory.setBeanClassLoader(getClassLoader());
 		// 设置EL表达式解析器（Bean初始化完成后填充属性时会用到）
-		// spring3增加了表达式语言的支持，默认可以使用#{bean.xxx}的形式来调用相关属性值
+		// spring3增加了表达式语言的支持，默认可以使用#{bean.xxx}的形式来调用相关属性值，对@Value依赖注入的时候，就可以使用到了。
 		beanFactory.setBeanExpressionResolver(new StandardBeanExpressionResolver(beanFactory.getBeanClassLoader()));
 		// 设置属性注册解析器PropertyEditor 这个主要是对bean的属性等设置管理的一个工具
+		// 1、可以自定义属性编辑器，继承PropertyEditorSupport并注册成bean
+		// 2、注册Spring自带的属性编辑器，实现PropertyEditorRegistrar，自己进行注册属性编辑器
 		beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment()));
 
 		// Configure the bean factory with context callbacks.
@@ -957,9 +984,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void initMessageSource() {
 		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
-		// 判断是否已经存在名为“messageSource”的Bean了（一般情况下，我们都是没有的）
+		// 判断是否已经存在名为“messageSource”的Bean、或者bean定义
 		if (beanFactory.containsLocalBean(MESSAGE_SOURCE_BEAN_NAME)) {
-			// 从容器里拿出这个messageSource
+			// 从容器里拿出这个messageSource、或进行初始化Bean
 			this.messageSource = beanFactory.getBean(MESSAGE_SOURCE_BEAN_NAME, MessageSource.class);
 			// Make MessageSource aware of parent MessageSource.
 			// 设置父属性。。。。。。。。。。。。。
@@ -1129,7 +1156,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.setTempClassLoader(null);
 
 		// Allow for caching all bean definition metadata, not expecting further changes.
-		// 缓存（冻结）所有的bean definition数据，不期望以后会改变
+		// 缓存（冻结）所有的bean definition的名称数据，不期望以后会改变，因此bean定义的添加修改，最好在BeanDefinitionRegistryPostProcessor中完成
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.

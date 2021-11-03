@@ -44,6 +44,10 @@ import org.springframework.util.StringValueResolver;
  * @see BeanDefinition#getPropertyValues
  * @see BeanDefinition#getConstructorArgumentValues
  * @see PlaceholderConfigurerSupport
+ *
+ * Spring中访问者模式的实现用例，比较短小就是了。。。
+ * BeanDefinition的访问者，通过设置访问者策略valueResolver，可以解析bean配置中的各个部分内容，如属性等等。。
+ * 比如也可以自定义解析器，然后做一些敏感词过滤等等。。
  */
 public class BeanDefinitionVisitor {
 

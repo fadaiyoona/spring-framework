@@ -34,6 +34,8 @@ import org.springframework.lang.Nullable;
  * @author Juergen Hoeller
  * @since 1.1.5
  * @see AbstractApplicationContext
+ *
+ * 为了方便操作父MessageSource而提供的代理类
  */
 public class DelegatingMessageSource extends MessageSourceSupport implements HierarchicalMessageSource {
 
