@@ -149,6 +149,16 @@ public @interface EnableAspectJAutoProxy {
 	/**
 	 * Indicate whether subclass-based (CGLIB) proxies are to be created as opposed
 	 * to standard Java interface-based proxies. The default is {@code false}.
+	 *
+	 * 为true表示强制使用CGLIB代理
+	 * Spring AOP部分使用JDK动态代理或者CGLIB来为目标对象创建代理(简易尽量使用JDK的动态代理)。
+	 * 如果被代理的目标对象实现了至少一个接口，则会使用JDK动态代理。所有该目标类型实现的接口都将被代理。
+	 * 若该目标对象没有实现任何接口，则创建一个CGLIB代理。
+	 *
+	 * JDK动态代理：其代理对象必须是某个接口的实现，它是通过运行期间创建一个借口的实现类来完成对目标对象的代理。
+	 *
+	 * CGLIB代理：实现原理类似于JDK动态代理，只是它是在运行期间生成的代理对象是针对目标类扩展的子类，覆盖其中的方法，因为是集成，所以该类或方法最好不要声明成final
+	 * CGLIB是高校的代码生成包，底层是依靠ASM(开源的Java字节码编辑类库)操作字节码实现的，性能比JDK强
 	 */
 	boolean proxyTargetClass() default false;
 
@@ -157,6 +167,12 @@ public @interface EnableAspectJAutoProxy {
 	 * for retrieval via the {@link org.springframework.aop.framework.AopContext} class.
 	 * Off by default, i.e. no guarantees that {@code AopContext} access will work.
 	 * @since 4.3.1
+	 *
+	 * 有时候目标对象内部的自我调用蒋无法实施切面中的增强，如this.b()这样的调用
+	 * 这里的this只想目标对象，因此不会执行增强方法。
+	 *
+	 * 设置为true时：通过AopContext.currentProxy()可以得到当前对象的代理对象
+	 * 将this.b()改成((AopProxyEnabledTestService) AopContext.currentProxy()).b()，这样即可
 	 */
 	boolean exposeProxy() default false;
 

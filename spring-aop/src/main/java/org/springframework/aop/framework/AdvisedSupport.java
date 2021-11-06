@@ -60,6 +60,8 @@ import org.springframework.util.CollectionUtils;
  *
  * 它最重要的一个方法是：提供getInterceptorsAndDynamicInterceptionAdvice方法用来获取对应代理方法对应有效的拦截器链
  * AdvisedSupport本身不会提供创建代理的任何方法，专注于生成拦截器链。委托给ProxyCreatorSupport去创建代理对象
+ *
+ * 在JdkDynamicAopProxy中，保存这个AOP代理所有的配置信息  包括所有的增强器等等
  */
 public class AdvisedSupport extends ProxyConfig implements Advised {
 

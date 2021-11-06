@@ -33,6 +33,8 @@ import org.springframework.util.Assert;
  * 1、设置被代理对象target 	--- targetSource
  * 2、设置代理接口		--- interfaces
  * 3、设置通知advice		--- advisors
+ *
+ * 创建Aop代理的基础上又做了一点点的封装
  */
 @SuppressWarnings("serial")
 public class ProxyCreatorSupport extends AdvisedSupport {

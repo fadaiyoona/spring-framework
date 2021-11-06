@@ -32,6 +32,9 @@ import org.aopalliance.aop.Advice;
  *
  * @author Rod Johnson
  * @author Juergen Hoeller
+ *
+ * 由于Spring中涉及过多的拦截器、增强器、增强方法等方式来对逻辑进行增强，所以非常有必要同意封装成Advisor来进行代理的创建，完成了增强的封装过程。
+ * aop封装的具体实现类：InstantiationModelAwarePointcutAdvisorImpl
  */
 public interface Advisor {
 

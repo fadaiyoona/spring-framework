@@ -28,6 +28,8 @@ package org.springframework.aop;
  * @author Rod Johnson
  * @since 04.04.2003
  * @see IntroductionInterceptor
+ *
+ * 引介增强
  */
 public interface IntroductionAdvisor extends Advisor, IntroductionInfo {
 

@@ -101,7 +101,7 @@ public class ProxyProcessorSupport extends ProxyConfig implements Ordered, BeanC
 	 * @param beanClass the class of the bean
 	 * @param proxyFactory the ProxyFactory for the bean
 	 *
-	 * 	这是它最重要的一个方法：就是把该bean所有的实现的接口 都作用在ProxyFactory 上 当然是有过滤得
+	 * 	把该bean所有的实现的接口 都作用在ProxyFactory 上 当然是有过滤得
 	 */
 	protected void evaluateProxyInterfaces(Class<?> beanClass, ProxyFactory proxyFactory) {
 		// 拿到该类所有实现的接口们~~~~

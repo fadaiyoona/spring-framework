@@ -125,6 +125,7 @@ public abstract class AopConfigUtils {
 		// 很显然，这里如果我们自己定义了这样一个自动代理创建器，也是Ok的
 		if (registry.containsBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME)) {
 			BeanDefinition apcDefinition = registry.getBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME);
+			// 如果已经存在了自动代理创建器且存在的自动代理创建器与现在的不一致，那么需要根据优先级来判断到底需要使用哪个
 			// 如果我们自定义的并不是cls这个class类型的Bean，那就做如下处理一下
 			if (!cls.getName().equals(apcDefinition.getBeanClassName())) {
 				// 这个处理非常有意思，总之就是`InfrastructureAdvisorAutoProxyCreator`

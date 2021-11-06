@@ -47,6 +47,7 @@ public class LazySingletonAspectInstanceFactoryDecorator implements MetadataAwar
 	}
 
 
+	// 延迟初始化增强器的初始化工作实现
 	@Override
 	public Object getAspectInstance() {
 		Object aspectInstance = this.materialized;

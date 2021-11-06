@@ -42,6 +42,8 @@ public interface AdvisorAdapterRegistry {
 	 * if the advice parameter is an Advisor, it is to be returned as-is)
 	 * @throws UnknownAdviceTypeException if no registered advisor adapter
 	 * can wrap the supposed advice
+	 *
+	 * 将拦截器统一封装成Advisor增强器
 	 */
 	Advisor wrap(Object advice) throws UnknownAdviceTypeException;
 
@@ -54,6 +56,8 @@ public interface AdvisorAdapterRegistry {
 	 * @return an array of MethodInterceptors to expose this Advisor's behavior
 	 * @throws UnknownAdviceTypeException if the Advisor type is
 	 * not understood by any registered AdvisorAdapter
+	 *
+	 * 获得通知器的通知，这里返回的就是具体代理可执行的增强方法了。
 	 */
 	MethodInterceptor[] getInterceptors(Advisor advisor) throws UnknownAdviceTypeException;
 
@@ -62,6 +66,8 @@ public interface AdvisorAdapterRegistry {
 	 * adapters for an AOP Alliance Interceptors or Spring Advices: these must be
 	 * automatically recognized by an {@code AdvisorAdapterRegistry} implementation.
 	 * @param adapter an AdvisorAdapter that understands particular Advisor or Advice types
+	 *
+	 * 注册通知适配器
 	 */
 	void registerAdvisorAdapter(AdvisorAdapter adapter);
 

@@ -40,6 +40,8 @@ import org.springframework.lang.Nullable;
  * @author Rod Johnson
  * @author Juergen Hoeller
  * @since 2.0
+ *
+ * 切点信息生成增强器实现类
  */
 @SuppressWarnings("serial")
 final class InstantiationModelAwarePointcutAdvisorImpl
@@ -70,6 +72,7 @@ final class InstantiationModelAwarePointcutAdvisorImpl
 
 	private final boolean lazy;
 
+	// 不同增强策略实例，如@After、@Before等等
 	@Nullable
 	private Advice instantiatedAdvice;
 
@@ -80,6 +83,9 @@ final class InstantiationModelAwarePointcutAdvisorImpl
 	private Boolean isAfterAdvice;
 
 
+	// 只是简单地将信息封装在类的实例中，所有的信息单纯的赋值，在实例化的过程中还完成了对于增强器的初始化。
+	// 因为不同的增强锁体现的逻辑是不同的，比如：@Before("test()")、@After("test()")标签的不同就是增强器增强的位置不同，所以就需要不同的增强器来完成不同的逻辑，
+	// 而根据注解中的信息初始化对应的增强器就是在instantiateAdvice函数中实现的
 	public InstantiationModelAwarePointcutAdvisorImpl(AspectJExpressionPointcut declaredPointcut,
 			Method aspectJAdviceMethod, AspectJAdvisorFactory aspectJAdvisorFactory,
 			MetadataAwareAspectInstanceFactory aspectInstanceFactory, int declarationOrder, String aspectName) {
@@ -110,6 +116,7 @@ final class InstantiationModelAwarePointcutAdvisorImpl
 			// A singleton aspect.
 			this.pointcut = this.declaredPointcut;
 			this.lazy = false;
+			// 不同增强器信息的初始化！！！
 			this.instantiatedAdvice = instantiateAdvice(this.declaredPointcut);
 		}
 	}
@@ -145,6 +152,7 @@ final class InstantiationModelAwarePointcutAdvisorImpl
 		return this.instantiatedAdvice;
 	}
 
+	// 不同增强器信息的初始化
 	private Advice instantiateAdvice(AspectJExpressionPointcut pointcut) {
 		Advice advice = this.aspectJAdvisorFactory.getAdvice(this.aspectJAdviceMethod, pointcut,
 				this.aspectInstanceFactory, this.declarationOrder, this.aspectName);

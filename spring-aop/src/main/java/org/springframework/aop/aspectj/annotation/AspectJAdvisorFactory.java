@@ -35,6 +35,8 @@ import org.springframework.lang.Nullable;
  * @since 2.0
  * @see AspectMetadata
  * @see org.aspectj.lang.reflect.AjTypeSystem
+ *
+ * AspectJ增强器的工厂类
  */
 public interface AspectJAdvisorFactory {
 
@@ -48,6 +50,8 @@ public interface AspectJAdvisorFactory {
 	 * Use the {@link #validate} method to handle these cases if necessary.
 	 * @param clazz the supposed annotation-style AspectJ class
 	 * @return whether or not this class is recognized by AspectJ as an aspect class
+	 *
+	 * 判断class是否存在Aspect注解
 	 */
 	boolean isAspect(Class<?> clazz);
 
@@ -67,6 +71,11 @@ public interface AspectJAdvisorFactory {
 	 * @param aspectInstanceFactory the aspect instance factory
 	 * (not the aspect instance itself in order to avoid eager instantiation)
 	 * @return a list of advisors for this class
+	 *
+	 * 获取bean的增强器
+	 * 1、对增强器的获取，包括获取注解以及根据注解生成增强器的步骤。
+	 * 2、然后考虑到在配置中可能会将增强配置成延迟初始化，那么需要在首位加入同步实例化增强器以保证增强使用之前的实例化。
+	 * 3、最后对DeclareParents注解的获取。
 	 */
 	List<Advisor> getAdvisors(MetadataAwareAspectInstanceFactory aspectInstanceFactory);
 
@@ -79,6 +88,8 @@ public interface AspectJAdvisorFactory {
 	 * @return {@code null} if the method is not an AspectJ advice method
 	 * or if it is a pointcut that will be used by other advice but will not
 	 * create a Spring advice in its own right
+	 *
+	 * 将切面bean的方法封装成增强器，如果不是增强器就返回空
 	 */
 	@Nullable
 	Advisor getAdvisor(Method candidateAdviceMethod, MetadataAwareAspectInstanceFactory aspectInstanceFactory,
@@ -99,6 +110,8 @@ public interface AspectJAdvisorFactory {
 	 * @see org.springframework.aop.aspectj.AspectJAfterAdvice
 	 * @see org.springframework.aop.aspectj.AspectJAfterReturningAdvice
 	 * @see org.springframework.aop.aspectj.AspectJAfterThrowingAdvice
+	 *
+	 * 不同增强器信息的初始化（增强策略）
 	 */
 	@Nullable
 	Advice getAdvice(Method candidateAdviceMethod, AspectJExpressionPointcut expressionPointcut,

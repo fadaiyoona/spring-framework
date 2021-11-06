@@ -38,6 +38,16 @@ package org.aopalliance.intercept;
  * </pre>
  *
  * @author Rod Johnson
+ *
+ * AOP中，方法最终可执行的增强器，拦截器，因为通过责任链的设计模式执行。
+ *
+ * 在AbstractAutoProxyCreator完成解析封装bean之后的具体增强器(具体增强策略Advice)，可能有两种略不相同的增强器：
+ * 可能是：1、如：AspectJMethodBeforeAdvice、AspectJAfterReturningAdvice，它需要转换成MethodBeforeAdviceInterceptor执行，持有这个advice对象。
+ * 也可能是：2、如：AspectJAfterAdvice、AspectJAfterThrowingAdvice、AspectJAroundAdvice，它本身就是MethodInterceptor，不需要转换，不持有这个advice对象，直接可以执行。
+ *
+ * 一些advice，最终在代理执行的时候，通过
+ * @see org.springframework.aop.framework.AdvisedSupport#getInterceptorsAndDynamicInterceptionAdvice(java.lang.reflect.Method, java.lang.Class)
+ * 转换成MethodInterceptor
  */
 @FunctionalInterface
 public interface MethodInterceptor extends Interceptor {

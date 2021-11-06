@@ -22,6 +22,13 @@ package org.aopalliance.aop;
  *
  * @author Rod Johnson
  * @version $Id: Advice.java,v 1.1 2004/03/19 17:02:16 johnsonr Exp $
+ *
+ * AbstractAutoProxyCreator完成解析封装bean之后的具体增强器(具体增强策略Advice)
+ * 对应有多种不同的增强策略实现，@After、@Before等等
+ *
+ * 最终在代理执行的时候，还会通过
+ * @see org.springframework.aop.framework.AdvisedSupport#getInterceptorsAndDynamicInterceptionAdvice(java.lang.reflect.Method, java.lang.Class)
+ * 转换成MethodInterceptor
  */
 public interface Advice {
 
