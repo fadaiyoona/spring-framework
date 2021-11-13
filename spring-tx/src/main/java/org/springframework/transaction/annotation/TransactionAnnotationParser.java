@@ -34,6 +34,8 @@ import org.springframework.transaction.interceptor.TransactionAttribute;
  * @see SpringTransactionAnnotationParser
  * @see Ejb3TransactionAnnotationParser
  * @see JtaTransactionAnnotationParser
+ *
+ * 解析方法、类上的事务标签信息
  */
 public interface TransactionAnnotationParser {
 

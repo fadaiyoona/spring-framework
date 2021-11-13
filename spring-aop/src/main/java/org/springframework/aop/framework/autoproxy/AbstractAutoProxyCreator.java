@@ -88,6 +88,9 @@ import org.springframework.util.StringUtils;
  * @see #getAdvicesAndAdvisorsForBean
  * @see BeanNameAutoProxyCreator
  * @see DefaultAdvisorAutoProxyCreator
+ *
+ * 自动代理相关抽象实现类。
+ * AOP、切面、事务等都是通过此基类进行扩展实现
  */
 @SuppressWarnings("serial")
 public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport

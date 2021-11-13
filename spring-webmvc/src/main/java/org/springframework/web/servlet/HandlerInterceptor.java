@@ -72,6 +72,9 @@ import org.springframework.web.method.HandlerMethod;
  * @see org.springframework.web.servlet.i18n.LocaleChangeInterceptor
  * @see org.springframework.web.servlet.theme.ThemeChangeInterceptor
  * @see javax.servlet.Filter
+ *
+ * handler的拦截器
+ * 在dispatch请求激活handler并返回视图前后调用
  */
 public interface HandlerInterceptor {
 
@@ -93,6 +96,8 @@ public interface HandlerInterceptor {
 	 * next interceptor or the handler itself. Else, DispatcherServlet assumes
 	 * that this interceptor has already dealt with the response itself.
 	 * @throws Exception in case of errors
+	 *
+	 * 在dispatch请求激活handler，处理程序处理请求之前被调用
 	 */
 	default boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
@@ -119,6 +124,8 @@ public interface HandlerInterceptor {
 	 * @param modelAndView the {@code ModelAndView} that the handler returned
 	 * (can also be {@code null})
 	 * @throws Exception in case of errors
+	 *
+	 * 在dispatch请求激活handler，处理程序处理请求之后被调用，可以对ModelAndView对象操作模型属性。
 	 */
 	default void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
 			@Nullable ModelAndView modelAndView) throws Exception {
@@ -144,6 +151,8 @@ public interface HandlerInterceptor {
 	 * @param ex any exception thrown on handler execution, if any; this does not
 	 * include exceptions that have been handled through an exception resolver
 	 * @throws Exception in case of errors
+	 *
+	 * 在dispatch请求激活handler，所有请求处理完成之后被调用，如视图呈现之后
 	 */
 	default void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
 			@Nullable Exception ex) throws Exception {

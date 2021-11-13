@@ -29,6 +29,8 @@ import org.springframework.transaction.TransactionDefinition;
  * @since 16.03.2003
  * @see DefaultTransactionAttribute
  * @see RuleBasedTransactionAttribute
+ *
+ * 事务的属性(事务标签)
  */
 public interface TransactionAttribute extends TransactionDefinition {
 

@@ -32,6 +32,8 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Juergen Hoeller
  * @since 2.5.5
+ *
+ * 事务配置的切点
  */
 @SuppressWarnings("serial")
 abstract class TransactionAttributeSourcePointcut extends StaticMethodMatcherPointcut implements Serializable {

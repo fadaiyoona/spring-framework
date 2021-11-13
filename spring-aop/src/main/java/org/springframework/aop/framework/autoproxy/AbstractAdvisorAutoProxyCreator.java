@@ -95,8 +95,11 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 */
 	protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
 		// 先获取到增强器的候选者，AnnotationAwareAspectJAutoProxyCreator中实现
+		// 使用事务的时候，这里就会拿到一个BeanFactoryTransactionAttributeSourceAdvisor的增强器
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
 		// 然后再对这些候选的增强器进行过滤，找到匹配能用的增强器
+		// 使用事务的时候，这里就会拿到BeanFactoryTransactionAttributeSourceAdvisor中的切点，即：TransactionAttributeSourcePointcut。
+		// TransactionAttributeSourcePointcut中持有TransactionAttributeSource(事务标签相关信息)
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
 		extendAdvisors(eligibleAdvisors);
 		if (!eligibleAdvisors.isEmpty()) {

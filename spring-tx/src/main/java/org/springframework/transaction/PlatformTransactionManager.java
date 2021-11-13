@@ -42,6 +42,8 @@ import org.springframework.lang.Nullable;
  * @see org.springframework.transaction.support.TransactionTemplate
  * @see org.springframework.transaction.interceptor.TransactionInterceptor
  * @see org.springframework.transaction.ReactiveTransactionManager
+ *
+ * 事务管理器
  */
 public interface PlatformTransactionManager extends TransactionManager {
 
@@ -67,6 +69,9 @@ public interface PlatformTransactionManager extends TransactionManager {
 	 * @see TransactionDefinition#getIsolationLevel
 	 * @see TransactionDefinition#getTimeout
 	 * @see TransactionDefinition#isReadOnly
+	 *
+	 * 获取事务，这里面就开始事务了
+	 * @param definition 事务标签属性
 	 */
 	TransactionStatus getTransaction(@Nullable TransactionDefinition definition)
 			throws TransactionException;

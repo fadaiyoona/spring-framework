@@ -32,6 +32,8 @@ import org.springframework.lang.Nullable;
  * @see TransactionInterceptor#setTransactionAttributeSource
  * @see TransactionProxyFactoryBean#setTransactionAttributeSource
  * @see org.springframework.transaction.annotation.AnnotationTransactionAttributeSource
+ *
+ * 事务标签信息管理器，管理全局所有类、方法的事务标签信息。
  */
 public interface TransactionAttributeSource {
 
@@ -60,6 +62,8 @@ public interface TransactionAttributeSource {
 	 * @param targetClass the target class (may be {@code null},
 	 * in which case the declaring class of the method must be used)
 	 * @return the matching transaction attribute, or {@code null} if none found
+	 *
+	 * 获取方法、类上的事务标签
 	 */
 	@Nullable
 	TransactionAttribute getTransactionAttribute(Method method, @Nullable Class<?> targetClass);

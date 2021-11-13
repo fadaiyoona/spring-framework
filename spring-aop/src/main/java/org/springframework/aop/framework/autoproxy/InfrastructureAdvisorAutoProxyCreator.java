@@ -26,6 +26,8 @@ import org.springframework.lang.Nullable;
  *
  * @author Juergen Hoeller
  * @since 2.0.7
+ *
+ * 重点实现还是在AbstractAutoProxyCreator中
  */
 @SuppressWarnings("serial")
 public class InfrastructureAdvisorAutoProxyCreator extends AbstractAdvisorAutoProxyCreator {

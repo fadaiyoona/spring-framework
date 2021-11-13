@@ -142,6 +142,8 @@ public class HandlerExecutionChain {
 	 * @return {@code true} if the execution chain should proceed with the
 	 * next interceptor or the handler itself. Else, DispatcherServlet assumes
 	 * that this interceptor has already dealt with the response itself.
+	 *
+	 * 拦截器的preHandler方法的调用
 	 */
 	boolean applyPreHandle(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		HandlerInterceptor[] interceptors = getInterceptors();
@@ -160,6 +162,8 @@ public class HandlerExecutionChain {
 
 	/**
 	 * Apply postHandle methods of registered interceptors.
+	 *
+	 * 应用所有拦截器的postHandle方法
 	 */
 	void applyPostHandle(HttpServletRequest request, HttpServletResponse response, @Nullable ModelAndView mv)
 			throws Exception {

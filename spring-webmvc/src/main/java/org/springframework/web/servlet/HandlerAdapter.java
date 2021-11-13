@@ -46,6 +46,8 @@ import org.springframework.lang.Nullable;
  * @author Juergen Hoeller
  * @see org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter
  * @see org.springframework.web.servlet.handler.SimpleServletHandlerAdapter
+ *
+ * 持有handler，中转调用handler并返回视图
  */
 public interface HandlerAdapter {
 
@@ -59,6 +61,8 @@ public interface HandlerAdapter {
 	 * }
 	 * @param handler the handler object to check
 	 * @return whether or not this object can use the given handler
+	 *
+	 * 是否支持handler
 	 */
 	boolean supports(Object handler);
 
@@ -73,6 +77,8 @@ public interface HandlerAdapter {
 	 * @throws Exception in case of errors
 	 * @return a ModelAndView object with the name of the view and the required
 	 * model data, or {@code null} if the request has been handled directly
+	 *
+	 * 中转调用handler并返回视图
 	 */
 	@Nullable
 	ModelAndView handle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception;
@@ -85,6 +91,8 @@ public interface HandlerAdapter {
 	 * @return the lastModified value for the given handler
 	 * @see javax.servlet.http.HttpServlet#getLastModified
 	 * @see org.springframework.web.servlet.mvc.LastModified#getLastModified
+	 *
+	 * 支持last-modify的缓存机制，获取last-modified的时间戳
 	 */
 	long getLastModified(HttpServletRequest request, Object handler);
 

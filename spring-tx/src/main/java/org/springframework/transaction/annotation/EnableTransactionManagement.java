@@ -155,10 +155,15 @@ import org.springframework.core.Ordered;
  * @see TransactionManagementConfigurationSelector
  * @see ProxyTransactionManagementConfiguration
  * @see org.springframework.transaction.aspectj.AspectJTransactionManagementConfiguration
+ *
+ * 开启事务模块
+ *
+ * 注意：默认情况下Spring中的事务处理只对RuntimeException方法进行回滚，所以，如果抛出普通的Exception不会产生回滚效果
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+// 重点！！！
 @Import(TransactionManagementConfigurationSelector.class)
 public @interface EnableTransactionManagement {
 

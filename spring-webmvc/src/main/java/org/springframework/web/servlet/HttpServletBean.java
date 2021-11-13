@@ -146,25 +146,34 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 	 * invoke subclass initialization.
 	 * @throws ServletException if bean properties are invalid (or required
 	 * properties are missing), or if subclass initialization fails.
+	 *
+	 * 初始化
+	 * 1、封装及验证初始化参数
+	 * 2、将当前servlet实例转化成BeanWrapper实例
+	 * 3、注册相对于Resource的属性编辑器
+	 * 4、属性注入
+	 * 5、servletBean的初始化
 	 */
 	@Override
 	public final void init() throws ServletException {
 
-		// 把servlet的初始化参数封装进来...
+		// 把servlet的初始化参数封装进来...，init-param这些
 		// Set bean properties from init parameters.
 		PropertyValues pvs = new ServletConfigPropertyValues(getServletConfig(), this.requiredProperties);
 		//这里面我们并没有给此Servlet初始化的一些参数，所以此处为空，为false
 		//若进来了，可以看到里面会做一些处理：将这个DispatcherServlet转换成一个BeanWrapper对象，从而能够以spring的方式来对初始化参数的值进行注入。
 		// 这些属性如contextConfigLocation、namespace等等。
-		//同时注册一个属性编辑器，一旦在属性注入的时候遇到Resource类型的属性就会使用ResourceEditor去解析。再留一个initBeanWrapper(bw)方法给子类覆盖，让子类处真正执行BeanWrapper的属性注入工作。
-		//但是HttpServletBean的子类FrameworkServlet和DispatcherServlet都没有覆盖其initBeanWrapper(bw)方法，所以创建的BeanWrapper对象没有任何作用。
 		//备注：此部分把当前Servlet封装成一个BeanWrapper在把它交给Spring管理部分非常重要，比如后续我们讲到SpringBoot源码的时候，会看出来这部分代码的重要性了。。。
 		if (!pvs.isEmpty()) {
 			try {
 				BeanWrapper bw = PropertyAccessorFactory.forBeanPropertyAccess(this);
 				ResourceLoader resourceLoader = new ServletContextResourceLoader(getServletContext());
+				// 同时注册一个属性编辑器，一旦在属性注入的时候遇到Resource类型的属性就会使用ResourceEditor去解析。
 				bw.registerCustomEditor(Resource.class, new ResourceEditor(resourceLoader, getEnvironment()));
+				// 再留一个initBeanWrapper(bw)方法给子类覆盖，让子类处真正执行BeanWrapper的属性注入工作。
+				// 但是HttpServletBean的子类FrameworkServlet和DispatcherServlet都没有覆盖其initBeanWrapper(bw)方法，所以创建的BeanWrapper对象没有任何作用。
 				initBeanWrapper(bw);
+				// 属性注入
 				bw.setPropertyValues(pvs, true);
 			}
 			catch (BeansException ex) {

@@ -562,6 +562,12 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * @see #setContextConfigLocation
 	 *
 	 * 创建一个web子容器，并且和上面Spring已经创建好了的父容器关联上
+	 *
+	 * 1、寻找或创建对应的WebApplicationContext实例
+	 *  1.1、通过构造函数的注入进行初始化。
+	 *  1.2、通过contextAttribute进行初始化。
+	 *  1.3、重新创建WebApplicationContext实例。
+	 * 2、
 	 */
 	protected WebApplicationContext initWebApplicationContext() {
 		// 从ServletContext中把上面已经创建好的根容器拿到手
@@ -597,10 +603,12 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			// has been registered in the servlet context. If one exists, it is assumed
 			// that the parent context (if any) has already been set and that the
 			// user has performed any initialization such as setting the context id
+			// 根据contextAttribute属性加载WebApplicationContext
 			wac = findWebApplicationContext();
 		}
 		if (wac == null) {
 			// No context instance is defined for this servlet -> create a local one
+			// 如果通过以上两种方式并没有找到任何突破，那就没办法了，只能在这里重新创建新的实例了。
 			wac = createWebApplicationContext(rootContext);
 		}
 
@@ -668,6 +676,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * @see org.springframework.web.context.support.XmlWebApplicationContext
 	 */
 	protected WebApplicationContext createWebApplicationContext(@Nullable ApplicationContext parent) {
+		// 获取servlet的初始化参数contextClass，如果没有配置默认为XMLWebApplicationContext.class
 		Class<?> contextClass = getContextClass();
 		if (!ConfigurableWebApplicationContext.class.isAssignableFrom(contextClass)) {
 			throw new ApplicationContextException(
@@ -675,15 +684,19 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 					"': custom WebApplicationContext class [" + contextClass.getName() +
 					"] is not of type ConfigurableWebApplicationContext");
 		}
+		// 通过放射方式实例化contextClass
 		ConfigurableWebApplicationContext wac =
 				(ConfigurableWebApplicationContext) BeanUtils.instantiateClass(contextClass);
 
 		wac.setEnvironment(getEnvironment());
+		// parent为ContextLoaderListener中创建的实例
 		wac.setParent(parent);
+		// 获取contextConfigLocation，配置在servlet初始化参数中
 		String configLocation = getContextConfigLocation();
 		if (configLocation != null) {
 			wac.setConfigLocation(configLocation);
 		}
+		// 容器初始化、刷新
 		configureAndRefreshWebApplicationContext(wac);
 
 		return wac;
@@ -718,6 +731,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 
 		postProcessWebApplicationContext(wac);
 		applyInitializers(wac);
+		// 加载配置文件，整合parent到wac
 		wac.refresh();
 	}
 
@@ -1003,6 +1017,14 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * Process this request, publishing an event regardless of the outcome.
 	 * <p>The actual event handling is performed by the abstract
 	 * {@link #doService} template method.
+	 *
+	 * 对于不同的方法，Spring并没有做特殊处理，而是统一将程序再一次地引导至processRequest中
+	 *
+	 * 1、为了保证当前线程的LocaleContext以及RequestAttributes可以在当前请求后还能恢复，提取当前线程的两个属性。
+	 * 2、根据当前request创建对应的LocaleContext和RequestAttributes，并绑定到当前线程。
+	 * 3、委托给doService方法进一步处理。
+	 * 4、请求处理结束后恢复线程到原始状态。
+	 * 5、请求处理结束后无论成功与否发布事件通知。
 	 */
 	protected final void processRequest(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
@@ -1010,6 +1032,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		long startTime = System.currentTimeMillis();
 		Throwable failureCause = null;
 
+		// 在RequestContextListener中已经对这俩进行了解析赋值
 		LocaleContext previousLocaleContext = LocaleContextHolder.getLocaleContext();
 		LocaleContext localeContext = buildLocaleContext(request);
 
@@ -1022,6 +1045,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		initContextHolders(request, localeContext, requestAttributes);
 
 		try {
+			// 逻辑处理请求
 			doService(request, response);
 		}
 		catch (ServletException | IOException ex) {
@@ -1034,11 +1058,13 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		}
 
 		finally {
+			// 恢复线程到原始状态
 			resetContextHolders(request, previousLocaleContext, previousAttributes);
 			if (requestAttributes != null) {
 				requestAttributes.requestCompleted();
 			}
 			logResult(request, response, failureCause, asyncManager);
+			// 请求处理结束后无论成功与否发布事件通知。
 			publishRequestHandledEvent(request, response, startTime, failureCause);
 		}
 	}

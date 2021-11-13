@@ -609,18 +609,23 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 			logger.debug("Executing prepared SQL statement" + (sql != null ? " [" + sql + "]" : ""));
 		}
 
+		// 获取数据库连接
 		Connection con = DataSourceUtils.getConnection(obtainDataSource());
 		PreparedStatement ps = null;
 		try {
 			ps = psc.createPreparedStatement(con);
+			// 应用用户设定的输入参数
 			applyStatementSettings(ps);
+			// 调用回调函数
 			T result = action.doInPreparedStatement(ps);
+			// 处理SQL警告
 			handleWarnings(ps);
 			return result;
 		}
 		catch (SQLException ex) {
 			// Release Connection early, to avoid potential connection pool deadlock
 			// in the case when the exception translator hasn't been initialized yet.
+			// 释放数据库连接避免当异常转换器没有被初始化的时候出现潜在的连接池死锁
 			if (psc instanceof ParameterDisposer) {
 				((ParameterDisposer) psc).cleanupParameters();
 			}
@@ -862,6 +867,7 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 		return updateCount(execute(psc, ps -> {
 			try {
 				if (pss != null) {
+					// 设置PreparedStatement所需的全部参数
 					pss.setValues(ps);
 				}
 				int rows = ps.executeUpdate();
@@ -1359,14 +1365,20 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 	 * @see #setMaxRows
 	 * @see #setQueryTimeout
 	 * @see org.springframework.jdbc.datasource.DataSourceUtils#applyTransactionTimeout
+	 *
+	 * 应用用户设定的输入参数
 	 */
 	protected void applyStatementSettings(Statement stmt) throws SQLException {
 		int fetchSize = getFetchSize();
 		if (fetchSize != -1) {
+			// setFetchSize最主要是为了减少网络交互次数设计的。
+			// 访问ResultSet时，如果它每次只从服务器上读取一行数据，则会产生大量的开销。setFetchSize的意思是当调用rs.next时，ResultSet会一次性从服务器上取得多少行数据回来，
+			// 这样在下次rs.next时，它可以直接从内存中获取数据而不需要网络交互，提高了效率。这个设置可能会被某些JDBC驱动忽略，而且设置过大也会曹成内存的上升。
 			stmt.setFetchSize(fetchSize);
 		}
 		int maxRows = getMaxRows();
 		if (maxRows != -1) {
+			// setMaxRows将此Statement对象生成的所有ResultSet对象可以包含的最大行数限制设置为给定数
 			stmt.setMaxRows(maxRows);
 		}
 		DataSourceUtils.applyTimeout(stmt, getDataSource(), getQueryTimeout());

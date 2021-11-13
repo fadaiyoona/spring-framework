@@ -164,6 +164,7 @@ public abstract class AbstractController extends WebContentGenerator implements 
 		prepareResponse(response);
 
 		// Execute handleRequestInternal in synchronized block if required.
+		// 如果需要session内的同步执行
 		if (this.synchronizeOnSession) {
 			HttpSession session = request.getSession(false);
 			if (session != null) {
@@ -181,6 +182,8 @@ public abstract class AbstractController extends WebContentGenerator implements 
 	 * Template method. Subclasses must implement this.
 	 * The contract is the same as for {@code handleRequest}.
 	 * @see #handleRequest
+	 *
+	 * 用户需要实现的逻辑
 	 */
 	@Nullable
 	protected abstract ModelAndView handleRequestInternal(HttpServletRequest request, HttpServletResponse response)

@@ -258,11 +258,18 @@ public class ContextLoader {
 	 * @see #CONTEXT_CLASS_PARAM
 	 * @see #CONFIG_LOCATION_PARAM
 	 *
-	 * 父容器初始化
+	 * 初始化web容器
+	 *
+	 * 1、WebApplicationContext存在性校验
+	 *  在配置中只允许声明一次ServletContextListener，多次声明会扰乱Spring的执行逻辑，所以这里首先做的就是对此验证，
+	 *  在Spring中如果创建WebApplicationContext实例会记录在ServletContext中以方便全局调用，而使用的key就是WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE，
+	 *  所以验证的方式就是查看ServletContext实例中是否有对应key的属性。
+	 * 2、创建WebApplicationContext实例
 	 */
 	public WebApplicationContext initWebApplicationContext(ServletContext servletContext) {
 		// 虽然注解驱动传进来的监听器对象持有WebApplicationContext的引用，但是并没有放进ServletContext容器哦
 		if (servletContext.getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE) != null) {
+			// 存在多次ContextLoader定义
 			throw new IllegalStateException(
 					"Cannot initialize context because there is already a root application context present - " +
 					"check whether you have multiple ContextLoader* definitions in your web.xml!");
@@ -279,8 +286,8 @@ public class ContextLoader {
 			// Store context in local instance variable, to guarantee that
 			// it is available on ServletContext shutdown.
 			// 这句特别重要，兼容了web.xml的方式以及注解驱动的方式。
-			// 下面讲解web.xml的方式的时候，我再会去详细讲解createWebApplicationContext(servletContext)这个方法~~~
 			if (this.context == null) {
+				// 创建WebApplicationContext实例
 				this.context = createWebApplicationContext(servletContext);
 			}
 			//从上图可以看出：XmlWebApplicationContext(xml驱动)和AnnotationConfigWebApplicationContext(注解驱动)都是复合的，都会进来
@@ -338,6 +345,8 @@ public class ContextLoader {
 	 * @param sc current servlet context
 	 * @return the root WebApplicationContext
 	 * @see ConfigurableWebApplicationContext
+	 *
+	 * 创建WebApplicationContext实例
 	 */
 	protected WebApplicationContext createWebApplicationContext(ServletContext sc) {
 		Class<?> contextClass = determineContextClass(sc);

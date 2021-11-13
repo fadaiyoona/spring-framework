@@ -28,6 +28,8 @@ import org.springframework.util.Assert;
  * @see BeanDefinition#getPropertyValues()
  * @see org.springframework.beans.factory.BeanFactory#getBean(String)
  * @see org.springframework.beans.factory.BeanFactory#getBean(Class)
+ *
+ * 将beanName想持有着，在属性填充的时候会获取成beanName对应的bean
  */
 public class RuntimeBeanReference implements BeanReference {
 
