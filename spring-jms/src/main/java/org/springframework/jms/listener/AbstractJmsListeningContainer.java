@@ -163,8 +163,11 @@ public abstract class AbstractJmsListeningContainer extends JmsDestinationAccess
 	 */
 	@Override
 	public void afterPropertiesSet() {
+		// 验证connectionFactory
 		super.afterPropertiesSet();
+		// 验证配置文件
 		validateConfiguration();
+		// 初始化
 		initialize();
 	}
 
@@ -198,6 +201,7 @@ public abstract class AbstractJmsListeningContainer extends JmsDestinationAccess
 	 */
 	public void initialize() throws JmsException {
 		try {
+			// lifecycleMonitor用于控制生命周期的同步处理
 			synchronized (this.lifecycleMonitor) {
 				this.active = true;
 				this.lifecycleMonitor.notifyAll();

@@ -62,6 +62,8 @@ import org.springframework.util.Assert;
  * @see javax.jms.MessageConsumer#setMessageListener
  * @see DefaultMessageListenerContainer
  * @see org.springframework.jms.listener.endpoint.JmsMessageEndpointManager
+ *
+ * 最简单的消息监听器容器，只能处理固定数量的JMS会话，且不支持事务
  */
 public class SimpleMessageListenerContainer extends AbstractMessageListenerContainer implements ExceptionListener {
 

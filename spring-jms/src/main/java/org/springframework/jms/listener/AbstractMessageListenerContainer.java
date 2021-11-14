@@ -692,6 +692,7 @@ public abstract class AbstractMessageListenerContainer extends AbstractJmsListen
 	protected void invokeListener(Session session, Message message) throws JMSException {
 		Object listener = getMessageListener();
 
+		// 激活监听器
 		if (listener instanceof SessionAwareMessageListener) {
 			doInvokeListener((SessionAwareMessageListener) listener, session, message);
 		}
@@ -733,6 +734,7 @@ public abstract class AbstractMessageListenerContainer extends AbstractJmsListen
 				sessionToUse = sessionToClose;
 			}
 			// Actually invoke the message listener...
+			// 真正激活监听器
 			listener.onMessage(message, sessionToUse);
 			// Clean up specially exposed Session, if any.
 			if (sessionToUse != session) {
