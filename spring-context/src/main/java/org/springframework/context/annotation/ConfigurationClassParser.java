@@ -107,6 +107,8 @@ import org.springframework.util.StringUtils;
  * @author Stephane Nicoll
  * @since 3.0
  * @see ConfigurationClassBeanDefinitionReader
+ *
+ * 解析职责的基本处理类，涵盖了各种解析处理的逻辑，如@Import、@Bean、@ImportResource、@PropertySource、@ComponentScan等注解都是在这个注解类中完成的。
  */
 class ConfigurationClassParser {
 
@@ -330,12 +332,14 @@ class ConfigurationClassParser {
 		}
 
 		// Process any @ComponentScan annotations
+		// 获取对应注解的配置信息
 		Set<AnnotationAttributes> componentScans = AnnotationConfigUtils.attributesForRepeatable(
 				sourceClass.getMetadata(), ComponentScans.class, ComponentScan.class);
 		if (!componentScans.isEmpty() &&
 				!this.conditionEvaluator.shouldSkip(sourceClass.getMetadata(), ConfigurationPhase.REGISTER_BEAN)) {
 			for (AnnotationAttributes componentScan : componentScans) {
 				// The config class is annotated with @ComponentScan -> perform the scan immediately
+				// 根据注解的配置，委托给它进一步扫描出bean定义
 				Set<BeanDefinitionHolder> scannedBeanDefinitions =
 						this.componentScanParser.parse(componentScan, sourceClass.getMetadata().getClassName());
 				// Check the set of scanned definitions for any further config classes and parse recursively if needed
@@ -344,7 +348,9 @@ class ConfigurationClassParser {
 					if (bdCand == null) {
 						bdCand = holder.getBeanDefinition();
 					}
+					// 对扫描出来的类进行过滤
 					if (ConfigurationClassUtils.checkConfigurationClassCandidate(bdCand, this.metadataReaderFactory)) {
+						// 将所有扫描出来的类委托到parse方法中递归处理
 						parse(bdCand.getBeanClassName(), holder.getBeanName());
 					}
 				}

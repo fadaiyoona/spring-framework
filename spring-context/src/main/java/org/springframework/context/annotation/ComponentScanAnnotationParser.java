@@ -82,6 +82,7 @@ class ComponentScanAnnotationParser {
 		scanner.setBeanNameGenerator(useInheritedGenerator ? this.beanNameGenerator :
 				BeanUtils.instantiateClass(generatorClass));
 
+		// scopedProxy属性构造
 		ScopedProxyMode scopedProxyMode = componentScan.getEnum("scopedProxy");
 		if (scopedProxyMode != ScopedProxyMode.DEFAULT) {
 			scanner.setScopedProxyMode(scopedProxyMode);
@@ -91,24 +92,29 @@ class ComponentScanAnnotationParser {
 			scanner.setScopeMetadataResolver(BeanUtils.instantiateClass(resolverClass));
 		}
 
+		// resourcePattern属性构造
 		scanner.setResourcePattern(componentScan.getString("resourcePattern"));
 
+		// includeFilters属性构造
 		for (AnnotationAttributes filter : componentScan.getAnnotationArray("includeFilters")) {
 			for (TypeFilter typeFilter : typeFiltersFor(filter)) {
 				scanner.addIncludeFilter(typeFilter);
 			}
 		}
+		// excludeFilters属性构造
 		for (AnnotationAttributes filter : componentScan.getAnnotationArray("excludeFilters")) {
 			for (TypeFilter typeFilter : typeFiltersFor(filter)) {
 				scanner.addExcludeFilter(typeFilter);
 			}
 		}
 
+		// lazyInit属性构造
 		boolean lazyInit = componentScan.getBoolean("lazyInit");
 		if (lazyInit) {
 			scanner.getBeanDefinitionDefaults().setLazyInit(true);
 		}
 
+		// basePackages属性构造
 		Set<String> basePackages = new LinkedHashSet<>();
 		String[] basePackagesArray = componentScan.getStringArray("basePackages");
 		for (String pkg : basePackagesArray) {
@@ -116,6 +122,7 @@ class ComponentScanAnnotationParser {
 					ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS);
 			Collections.addAll(basePackages, tokenized);
 		}
+		// basePackageClasses属性构造
 		for (Class<?> clazz : componentScan.getClassArray("basePackageClasses")) {
 			basePackages.add(ClassUtils.getPackageName(clazz));
 		}

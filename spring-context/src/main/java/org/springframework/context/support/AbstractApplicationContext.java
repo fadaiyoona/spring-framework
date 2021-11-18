@@ -677,30 +677,31 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) {
 			// Prepare this context for refreshing.
-			// 容器刷新前的准备，设置上下文状态，获取属性，验证必要的属性等
+			// 1、容器刷新前的准备，设置上下文状态，获取属性，验证必要的属性等
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
-			// 获取新的beanFactory、销毁原有beanFactory
+			// 2、获取新的beanFactory、销毁原有beanFactory
 			// 为每个bean生成BeanDefinition等  注意，此处是获取新的，销毁旧的，这就是刷新的意义
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
-			// 配置标准的beanFactory，设置ClassLoader，设置SpEL表达式解析器等
+			// 3、配置标准的beanFactory，设置ClassLoader，设置SpEL表达式解析器等
 			prepareBeanFactory(beanFactory);
 
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
-				// 模板方法，允许在子类中对beanFactory进行后置处理。如web环境针对此做特殊处理
+				// 4、模板方法，允许在子类中对beanFactory进行后置处理。如web环境针对此做特殊处理
 				postProcessBeanFactory(beanFactory);
 
 				// Invoke factory processors registered as beans in the context.
-				// 实例化并调用所有注册的beanFactory后置处理器（实现接口BeanFactoryPostProcessor的bean）。
+				// 5、实例化并调用所有注册的beanFactory后置处理器（实现接口BeanFactoryPostProcessor的bean）。
 				// 在beanFactory标准初始化之后执行  例如：PropertyPlaceholderConfigurer(处理占位符)
+				// bean定义的注册就是这里处理的
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
-				// 实例化和注册beanFactory中扩展了BeanPostProcessor的bean。
+				// 6、实例化和注册beanFactory中扩展了BeanPostProcessor的bean。
 				// 例如：
 				// AutowiredAnnotationBeanPostProcessor(处理被@Autowired注解修饰的bean并注入)
 				// RequiredAnnotationBeanPostProcessor(处理被@Required注解修饰的方法)
@@ -708,7 +709,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
-				// 初始化i18n国际化工具类MessageSource
+				// 7、初始化i18n国际化工具类MessageSource
 				// 初始化消息源。向容器里注册一个一个事件源的单例Bean：MessageSource
 				// JDK的java.util包中提供了几个支持本地化的格式化操作工具了：NumberFormat、DateFormat、MessageFormat，
 				// 而在Spring中的国际化资源操作也无非是对于这些类的封装操作、具体如何创建MessageSource这个bean、及初始化文件，这些倒是没有深入了解
@@ -731,26 +732,26 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
-				// 初始化事件多播器
+				// 8、初始化事件多播器
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
-				// 模板方法，在容器刷新的时候可以自定义逻辑（子类自己去实现逻辑），不同的Spring容器做不同的事情
+				// 9、模板方法，在容器刷新的时候可以自定义逻辑（子类自己去实现逻辑），不同的Spring容器做不同的事情
 				// 类似于第四步的postProcessBeanFactory，它也是个模版方法。本环境中的实现为：AbstractRefreshableWebApplicationContext#onRefresh方法：
 				onRefresh();
 
 				// Check for listener beans and register them.
-				// 注册监听器，并且广播early application events,也就是早期的事件
+				// 10、注册监听器，并且广播early application events,也就是早期的事件
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
-				// 非常重要。。。实例化所有剩余的（非懒加载）单例Bean。（也就是我们自己定义的那些Bean们）
+				// 11、非常重要。。。实例化所有剩余的（非懒加载）单例Bean。（也就是我们自己定义的那些Bean们）
 				// 比如invokeBeanFactoryPostProcessors方法中根据各种注解解析出来的类，在这个时候都会被初始化  扫描的 @Bean之类的
 				// 实例化的过程各种BeanPostProcessor开始执行、起作用~~~~~~~~~~~~~~
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
-				// refresh做完之后需要做的其他事情
+				// 12、refresh做完之后需要做的其他事情
 				// 清除上下文资源缓存（如扫描中的ASM元数据）
 				// 初始化上下文的生命周期处理器，并刷新（找出Spring容器中实现了Lifecycle接口的bean并执行start()方法）。
 				// 发布ContextRefreshedEvent事件告知对应的ApplicationListener进行响应的操作
