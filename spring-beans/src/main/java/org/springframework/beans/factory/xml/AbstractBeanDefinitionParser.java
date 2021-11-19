@@ -60,6 +60,7 @@ public abstract class AbstractBeanDefinitionParser implements BeanDefinitionPars
 	@Override
 	@Nullable
 	public final BeanDefinition parse(Element element, ParserContext parserContext) {
+		// 解析生成bean定义信息
 		AbstractBeanDefinition definition = parseInternal(element, parserContext);
 		if (definition != null && !parserContext.isNested()) {
 			try {
@@ -76,9 +77,11 @@ public abstract class AbstractBeanDefinitionParser implements BeanDefinitionPars
 						aliases = StringUtils.trimArrayElements(StringUtils.commaDelimitedListToStringArray(name));
 					}
 				}
+				// 将AbstractBeanDefinition转换为BeanDefinitionHolder并注册
 				BeanDefinitionHolder holder = new BeanDefinitionHolder(definition, id, aliases);
 				registerBeanDefinition(holder, parserContext.getRegistry());
 				if (shouldFireEvents()) {
+					// 通知监听器进行处理
 					BeanComponentDefinition componentDefinition = new BeanComponentDefinition(holder);
 					postProcessComponentDefinition(componentDefinition);
 					parserContext.registerComponent(componentDefinition);
@@ -149,6 +152,8 @@ public abstract class AbstractBeanDefinitionParser implements BeanDefinitionPars
 	 * @return the primary {@link BeanDefinition} resulting from the parsing of the supplied {@link Element}
 	 * @see #parse(org.w3c.dom.Element, ParserContext)
 	 * @see #postProcessComponentDefinition(org.springframework.beans.factory.parsing.BeanComponentDefinition)
+	 *
+	 * 解析生成bean定义信息
 	 */
 	@Nullable
 	protected abstract AbstractBeanDefinition parseInternal(Element element, ParserContext parserContext);

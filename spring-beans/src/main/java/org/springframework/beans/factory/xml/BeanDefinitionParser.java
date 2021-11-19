@@ -35,6 +35,8 @@ import org.springframework.lang.Nullable;
  * @since 2.0
  * @see NamespaceHandler
  * @see AbstractBeanDefinitionParser
+ *
+ * bean定义信息解析器
  */
 public interface BeanDefinitionParser {
 
@@ -51,6 +53,8 @@ public interface BeanDefinitionParser {
 	 * @param parserContext the object encapsulating the current state of the parsing process;
 	 * provides access to a {@link org.springframework.beans.factory.support.BeanDefinitionRegistry}
 	 * @return the primary {@link BeanDefinition}
+	 *
+	 * 解析生成bean定义信息
 	 */
 	@Nullable
 	BeanDefinition parse(Element element, ParserContext parserContext);

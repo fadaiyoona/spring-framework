@@ -678,11 +678,20 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		synchronized (this.startupShutdownMonitor) {
 			// Prepare this context for refreshing.
 			// 1、容器刷新前的准备，设置上下文状态，获取属性，验证必要的属性等
+			/**
+			 * 前戏，做容器刷新前的准备工作
+			 * 1、设置容器的启动时间
+			 * 2、设置活跃状态为true
+			 * 3、设置关闭状态为false
+			 * 4、获取Environment对象，并加载当前系统的属性值到Environment对象中
+			 * 5、准备监听器和事件的集合对象，默认为空的集合
+			 */
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
-			// 2、获取新的beanFactory、销毁原有beanFactory
+			// 2、获取新的beanFactory、销毁原有beanFactory，DefaultListableBeanFactory
 			// 为每个bean生成BeanDefinition等  注意，此处是获取新的，销毁旧的，这就是刷新的意义
+			// 加载xml配置文件的属性值到当前工厂中，最重要的就是BeanDefinition
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
@@ -819,6 +828,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// Store pre-refresh ApplicationListeners...
 		// 初始化容器，用于装载早期的一些事件
+		// 判断刷新前的应用程序监听器集合是否为空，如果为空，则将监听器添加到此集合中
 		if (this.earlyApplicationListeners == null) {
 			this.earlyApplicationListeners = new LinkedHashSet<>(this.applicationListeners);
 		}
@@ -830,6 +840,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// Allow for the collection of early ApplicationEvents,
 		// to be published once the multicaster is available...
+		// 创建刷新前的监听事件集合
 		this.earlyApplicationEvents = new LinkedHashSet<>();
 	}
 

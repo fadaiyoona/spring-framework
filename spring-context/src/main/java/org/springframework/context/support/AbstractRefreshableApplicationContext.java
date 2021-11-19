@@ -131,6 +131,7 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 			// 创建具体的beanFactory，这里创建的是DefaultListableBeanFactory，最重要的beanFactory spring注册及加载bean就靠它
 			// createBeanFactory()这个方法，看下面，还有得说的
 			DefaultListableBeanFactory beanFactory = createBeanFactory();
+			// 为了序列化指定id，可以从id反序列化到beanFactory对象
 			beanFactory.setSerializationId(getId());
 			// 这句比较简单，就是把当前旧容器的一些配置值复制给新容器
 			// allowBeanDefinitionOverriding属性是指是否允对一个名字相同但definition不同进行重新注册，默认是true。

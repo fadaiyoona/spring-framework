@@ -190,7 +190,6 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 					}
 					else {
 						// 自定义标签的解析
-						// 配置文件方式已经很少使用了，自定义的标签更是很少了，这里就不做解读了。
 						delegate.parseCustomElement(ele);
 					}
 				}
