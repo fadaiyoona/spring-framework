@@ -29,7 +29,7 @@
 <!--    &lt;!&ndash; 切面：切入点和通知 &ndash;&gt;-->
 <!--        <aop:config>-->
 <!--            <aop:aspect id="logger" ref="logger">-->
-<!--                <aop:pointcut expression="execution(* com.mashibing.test.*.*(..))" id="method" />-->
+<!--                <aop:pointcut expression="execution(* com.test.*.*(..))" id="method" />-->
 <!--                <aop:before method="recordBefore" pointcut-ref="method" />-->
 <!--                <aop:after method="recordAfter" pointcut-ref="method" />-->
 <!--            </aop:aspect>-->

@@ -1,0 +1,2 @@
+自定义BeanPostProcessor接口实现Aware接口功能
+@see org.springframework.context.support.ApplicationContextAwareProcessor

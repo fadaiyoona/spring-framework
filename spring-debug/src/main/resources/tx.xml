@@ -24,7 +24,7 @@
         <property name="jdbcTemplate" ref="jdbcTemplate"></property>
     </bean>
     <aop:config>
-        <aop:pointcut id="txPoint" expression="execution(* com.mashibing.tx.xml.*.*.*(..))"/>
+        <aop:pointcut id="txPoint" expression="execution(* com.tx.xml.*.*.*(..))"/>
         <aop:advisor advice-ref="myAdvice" pointcut-ref="txPoint"></aop:advisor>
     </aop:config>
     <tx:advice id="myAdvice" transaction-manager="transactionManager">

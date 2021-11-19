@@ -5,6 +5,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 @Configuration
-@ComponentScan(basePackages="com.mashibing.aop.annotation")
+@ComponentScan(basePackages="com.aop.annotation")
 @EnableAspectJAutoProxy
 public class SpringConfiguration { }

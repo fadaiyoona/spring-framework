@@ -20,7 +20,7 @@
         <!-- 切面：切入点和通知 -->
     <aop:config>
         <aop:aspect id="logger" ref="logger">
-            <aop:pointcut expression="execution(* com.mashibing.cycle.*.*(..))" id="method" />
+            <aop:pointcut expression="execution(* com.cycle.*.*(..))" id="method" />
             <aop:before method="recordBefore" pointcut-ref="method" />
             <aop:after method="recordAfter" pointcut-ref="method" />
         </aop:aspect>

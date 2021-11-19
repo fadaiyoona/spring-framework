@@ -11,7 +11,7 @@ import java.util.Arrays;
 //@Order(200)
 public class LogUtil {
 
-//    @Pointcut("execution(public Integer com.mashibing.service.MyCalculator.*(Integer,Integer))")
+//    @Pointcut("execution(public Integer com.service.MyCalculator.*(Integer,Integer))")
     public void myPointCut(){}
 
 //    @Pointcut("execution(* *(..))")

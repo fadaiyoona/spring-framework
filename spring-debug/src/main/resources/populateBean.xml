@@ -15,7 +15,7 @@
         <property name="address" ref="address"></property>
         <!--引用内部bean-->
         <!-- <property name="address">
-             <bean class="com.mashibing.bean.Address">
+             <bean class="com.bean.Address">
                  <property name="province" value="北京"></property>
                  <property name="city" value="北京"></property>
                  <property name="town" value="西城区"></property>
