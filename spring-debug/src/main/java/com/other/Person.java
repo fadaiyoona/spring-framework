@@ -1,4 +1,4 @@
-package com;
+package com.other;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.InitializingBean;

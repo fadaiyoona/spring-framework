@@ -8,11 +8,11 @@
 <!--    <context:component-scan base-package="com.mashibing"></context:component-scan>-->
 
 
-<!--&lt;!&ndash;    <bean id="person" class="com.Person" >&ndash;&gt;-->
+<!--&lt;!&ndash;    <bean id="person" class="com.other.Person" >&ndash;&gt;-->
 <!--&lt;!&ndash;        <constructor-arg name="id" value="1"></constructor-arg>&ndash;&gt;-->
 <!--&lt;!&ndash;        <constructor-arg name="name" value="zhangsan"></constructor-arg>&ndash;&gt;-->
 <!--&lt;!&ndash;    </bean>&ndash;&gt;-->
-<!--    <bean id="person2" class="com.Person">-->
+<!--    <bean id="person2" class="com.other.Person">-->
 <!--        <property name="id" value="2"></property>-->
 <!--        <property name="name" value="lisi"></property>-->
 <!--    </bean>-->
@@ -35,9 +35,9 @@
 <!--            </aop:aspect>-->
 <!--        </aop:config>-->
 
-    <bean class="com.Student" id="student">
+    <bean class="com.other.Student" id="student">
         <property name="id" value="1"></property>
         <property name="name" value="zhangsan"></property>
     </bean>
-    <bean class="com.MyBeanFactoryPostProcessor512"></bean>
+    <bean class="com.other.MyBeanFactoryPostProcessor512"></bean>
 </beans>

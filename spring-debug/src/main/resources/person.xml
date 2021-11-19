@@ -6,7 +6,7 @@
 
     <context:component-scan base-package="com.mashibing"></context:component-scan>
 
-    <bean id="person" class="com.Person" >
+    <bean id="person" class="com.other.Person" >
         <property name="id" value="1"></property>
         <property name="name" value="zhangsan"></property>
 <!--        <constructor-arg name="id" value="1"></constructor-arg>-->

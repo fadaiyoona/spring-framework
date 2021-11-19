@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
+<beans
+		xmlns="http://www.springframework.org/schema/beans"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:msb="http://www.mashibing.com/schema/user"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -12,12 +13,12 @@
     <bean id="user" class="com.supplier.User" ></bean>
     <context:property-placeholder location="classpath:db.properties" ></context:property-placeholder>
     <bean class="com.selfbdrpp.MyBeanDefinitionRegistryPostProcessor"></bean>
-<!--    <bean id="person2" class="com.Person" depends-on="">-->
+<!--    <bean id="person2" class="com.other.Person" depends-on="">-->
 <!--        <constructor-arg index="0" value="2">-->
 <!--        </constructor-arg>-->
 <!--        <constructor-arg index="1" value="lisi"></constructor-arg>-->
 <!--    </bean>-->
-    <bean id="person" class="com.Person" scope="prototype">
+    <bean id="person" class="com.other.Person" scope="prototype">
         <property name="id" value="1"></property>
         <property name="name" value="zhangsan"></property>
     </bean>
@@ -33,7 +34,7 @@
             </set>
         </property>
     </bean>
-<!--    <bean class="com.MyBeanFactoryPostProcessor"></bean>-->
+<!--    <bean class="com.other.MyBeanFactoryPostProcessor"></bean>-->
 <!--    <bean id="a" class="com.A" scope="prototype">-->
 <!--        <property name="b" ref="b"></property>-->
 <!--    </bean>-->

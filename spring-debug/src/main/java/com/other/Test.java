@@ -1,29 +1,19 @@
-package com;
+package com.other;
 
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import com.acommon.MyClassPathXmlApplicationContext;
+import com.config.MyPropertySource;
+import com.test.A;
 
 public class Test {
 
     public static void main(String[] args) {
-        MyClassPathXmlApplicationContext ac = new MyClassPathXmlApplicationContext("factoryBean.xml");
-////        MyFactoryBean bean1 = (MyFactoryBean) ac.getBean( "&myFactoryBean");
-////        System.out.println(bean1);
-////        User bean = (User) ac.getBean("myFactoryBean");
-////        System.out.println(bean.getUsername());
-////        User bean2 = (User) ac.getBean("myFactoryBean");
-////        System.out.println(bean2.getUsername());
-//
-////        MyClassPathXmlApplicationContext ac = new MyClassPathXmlApplicationContext("applicationContext.xml");
-////        System.out.println(ac.getBean(MyPropertySource.class).getName());
-////        ApplicationContext ac = new ClassPathXmlApplicationContext("spring-${username}.xml");
-////        Person bean = ac.getBean(Person.class);
-////        System.out.println(bean);
-////        A bean1 = ac.getBean(A.class);
-////        System.out.println(bean1);
-////        ac.close();
-////        User user = (User) ac.getBean("msb");
-////        System.out.println(user.getUsername());
+        MyClassPathXmlApplicationContext ac = new MyClassPathXmlApplicationContext("applicationContext.xml");
+        System.out.println(ac.getBean(MyPropertySource.class).getName());
+        Person bean = ac.getBean(Person.class);
+        System.out.println(bean);
+        A bean1 = ac.getBean(A.class);
+        System.out.println(bean1);
+        ac.close();
 //
 ////        MyClassPathXmlApplicationContext ac = new MyClassPathXmlApplicationContext("selfEditor.xml");
 ////        Customer bean = ac.getBean(Customer.class);

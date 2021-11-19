@@ -1,4 +1,4 @@
-package com;
+package com.factoryBean;
 
 import org.springframework.beans.factory.FactoryBean;
 

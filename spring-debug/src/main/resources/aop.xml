@@ -7,7 +7,7 @@
        http://www.springframework.org/schema/aop
        http://www.springframework.org/schema/aop/spring-aop.xsd
 ">
-    <bean class="com.MyBeanFactoryPostProcessorBySelf" ></bean>
+    <bean class="com.other.MyBeanFactoryPostProcessorBySelf" ></bean>
     <bean id="logUtil" class="com.aop.xml.util.LogUtil" ></bean>
     <bean id="myCalculator" class="com.aop.xml.service.MyCalculator" ></bean>
     <aop:config>

@@ -33,5 +33,5 @@
             <tx:method name="updateStock" propagation="REQUIRES_NEW" />
         </tx:attributes>
     </tx:advice>
-    <bean class="com.MyBeanFactoryPostProcessorBySelf"></bean>
+    <bean class="com.other.MyBeanFactoryPostProcessorBySelf"></bean>
 </beans>

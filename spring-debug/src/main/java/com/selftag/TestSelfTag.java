@@ -1,6 +1,6 @@
 package com.selftag;
 
-import com.MyClassPathXmlApplicationContext;
+import com.acommon.MyClassPathXmlApplicationContext;
 import org.springframework.context.ApplicationContext;
 
 public class TestSelfTag {

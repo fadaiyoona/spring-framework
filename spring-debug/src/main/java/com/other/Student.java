@@ -1,4 +1,4 @@
-package com;
+package com.other;
 
 public class Student {
     private int id;
