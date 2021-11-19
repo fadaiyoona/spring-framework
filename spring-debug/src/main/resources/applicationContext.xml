@@ -2,17 +2,17 @@
 <beans
 		xmlns="http://www.springframework.org/schema/beans"
        xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:msb="http://www.mashibing.com/schema/user"
+       xmlns:msb="http://www.alin.com/schema/user"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context.xsd
-        http://www.mashibing.com/schema/user http://www.mashibing.com/schema/user.xsd">
+        http://www.alin.com/schema/user http://www.alin.com/schema/user.xsd">
 
 <!--    <msb:user id="msb" userName="lian" email="lian@msb.com" password="123456"></msb:user>-->
-    <context:component-scan base-package="com.mashibing" ></context:component-scan>
+    <context:component-scan base-package="com" ></context:component-scan>
     <bean id="user" class="com.supplier.User" ></bean>
     <context:property-placeholder location="classpath:db.properties" ></context:property-placeholder>
-    <bean class="com.selfbdrpp.MyBeanDefinitionRegistryPostProcessor"></bean>
+    <bean class="com.selfBeanFactoryPostProcessor.MyBeanDefinitionRegistryPostProcessor"></bean>
 <!--    <bean id="person2" class="com.other.Person" depends-on="">-->
 <!--        <constructor-arg index="0" value="2">-->
 <!--        </constructor-arg>-->

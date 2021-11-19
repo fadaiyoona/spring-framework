@@ -1,4 +1,4 @@
-package com.selfbdrpp;
+package com.selfBeanFactoryPostProcessor;
 
 public class Teacher {
 
