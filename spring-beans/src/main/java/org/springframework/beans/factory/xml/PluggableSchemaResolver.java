@@ -54,6 +54,10 @@ import org.springframework.util.CollectionUtils;
  * @author Rob Harrop
  * @author Juergen Hoeller
  * @since 2.0
+ *
+ * 它是sax规范，EntityResolver接口，用于配合DocumentLoader解析配置文件成类对象，如Document对象
+ * @see org.springframework.beans.factory.xml.PluggableSchemaResolver#getSchemaMappings
+ * 会将所有的META-INF/spring.schemas文件，解析成map，schema URL -> local schema path。避免从网络上下载这个xsd文件
  */
 public class PluggableSchemaResolver implements EntityResolver {
 

@@ -179,6 +179,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		// 而判断是否默认命名空间还是自定义命名空间的办法其实是使用node.getNamespaceURI()获取命名空间，并与spring中固定的命名空间进行对比。
 		// 如果一致则认为是默认命名空间
 		if (delegate.isDefaultNamespace(root)) {
+			// 只有<bean>标签是默认标签，其他都是spring自己实现的自定义标签
 			NodeList nl = root.getChildNodes();
 			for (int i = 0; i < nl.getLength(); i++) {
 				Node node = nl.item(i);
