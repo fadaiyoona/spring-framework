@@ -43,7 +43,9 @@ import org.springframework.util.ObjectUtils;
  * @author Juergen Hoeller
  * @since 4.3.4
  *
- * bean初始化完成之后，检查是否实现了ApplicationListener，如果实现了，说明是事件监听器，那么加入到监听器中，这样就可以进行广播事件了。
+ * 此类用来检测bean是否实现了ApplicationListener接口，两个作用：
+ * 	1、实例化完成之后，如果bean的单例的并且属于ApplicationListener接口，则加入到多播器中
+ * 	2、bean销毁之前,如果bean是一个applicationListener,则从多播器中提前删除
  */
 class ApplicationListenerDetector implements DestructionAwareBeanPostProcessor, MergedBeanDefinitionPostProcessor {
 
@@ -59,6 +61,12 @@ class ApplicationListenerDetector implements DestructionAwareBeanPostProcessor, 
 	}
 
 
+	/**
+	 * singletonNames保存了所有将要创建的bean名称以及这个bean是否是单例的映射关系，这个方法会在对象被创建出来后，属性注入之前执行
+	 * @param beanDefinition the merged bean definition for the bean
+	 * @param beanType the actual type of the managed bean instance
+	 * @param beanName the name of the bean
+	 */
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
 		if (ApplicationListener.class.isAssignableFrom(beanType)) {
@@ -66,20 +74,35 @@ class ApplicationListenerDetector implements DestructionAwareBeanPostProcessor, 
 		}
 	}
 
+	/**
+	 * 不做任何处理，直接返回对象
+	 * @param bean the new bean instance
+	 * @param beanName the name of the bean
+	 * @return
+	 */
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) {
 		return bean;
 	}
 
+	/**
+	 * 将我们自定义的单例类作为监听器添加到applicationEventMulticaster里
+	 * @param bean the new bean instance
+	 * @param beanName the name of the bean
+	 * @return
+	 */
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) {
 		if (bean instanceof ApplicationListener) {
 			// potentially not detected as a listener by getBeanNamesForType retrieval
+			// 判断当前bean是否是单例，如果是的话，直接添加到容器的监听器集合中
 			Boolean flag = this.singletonNames.get(beanName);
 			if (Boolean.TRUE.equals(flag)) {
 				// singleton bean (top-level or inner): register on the fly
+				// 添加到容器的监听器集合中
 				this.applicationContext.addApplicationListener((ApplicationListener<?>) bean);
 			}
+			// 如果不是单例的，并且又是一个嵌套的bean，那么打印日志，提示内嵌的bean只有在单例的情况下才能作为事件监听器
 			else if (Boolean.FALSE.equals(flag)) {
 				if (logger.isWarnEnabled() && !this.applicationContext.containsBean(beanName)) {
 					// inner bean with other scope - can't reliably process events

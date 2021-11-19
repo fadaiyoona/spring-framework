@@ -692,6 +692,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			// 2、获取新的beanFactory、销毁原有beanFactory，DefaultListableBeanFactory
 			// 为每个bean生成BeanDefinition等  注意，此处是获取新的，销毁旧的，这就是刷新的意义
 			// 加载xml配置文件的属性值到当前工厂中，最重要的就是BeanDefinition
+			// 添加一些内置的BeanFactoryPostProcessor
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.

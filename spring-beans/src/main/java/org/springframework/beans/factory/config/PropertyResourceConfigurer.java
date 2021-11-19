@@ -77,12 +77,15 @@ public abstract class PropertyResourceConfigurer extends PropertiesLoaderSupport
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 		try {
+			// 获取所有属性
 			Properties mergedProps = mergeProperties();
 
 			// Convert the merged properties, if necessary.
+			// 转换合并属性
 			convertProperties(mergedProps);
 
 			// Let the subclass process the properties.
+			// 子类实现属性替换过程
 			processProperties(beanFactory, mergedProps);
 		}
 		catch (IOException ex) {
@@ -97,6 +100,8 @@ public abstract class PropertyResourceConfigurer extends PropertiesLoaderSupport
 	 * for each property value, replacing the original with the converted value.
 	 * @param props the Properties to convert
 	 * @see #processProperties
+	 *
+	 * 对指定属性对象中的属性值进行必要的转换
 	 */
 	protected void convertProperties(Properties props) {
 		Enumeration<?> propertyNames = props.propertyNames();
@@ -118,6 +123,8 @@ public abstract class PropertyResourceConfigurer extends PropertiesLoaderSupport
 	 * @param propertyValue the original value from the properties source
 	 * @return the converted value, to be used for processing
 	 * @see #convertPropertyValue(String)
+	 *
+	 * 对指定名称的属性的属性值进行必要的转换
 	 */
 	protected String convertProperty(String propertyName, String propertyValue) {
 		return convertPropertyValue(propertyValue);
@@ -136,6 +143,8 @@ public abstract class PropertyResourceConfigurer extends PropertiesLoaderSupport
 	 * @see #setLocations
 	 * @see #setLocation
 	 * @see #convertProperty(String, String)
+	 *
+	 * 对属性值的必要转换，此处没有做任何实现，直接返回原值，实现类可以覆盖该方法
 	 */
 	protected String convertPropertyValue(String originalValue) {
 		return originalValue;

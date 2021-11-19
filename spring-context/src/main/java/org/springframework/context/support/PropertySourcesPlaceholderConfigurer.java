@@ -61,6 +61,8 @@ import org.springframework.util.StringValueResolver;
  * @see org.springframework.core.env.ConfigurableEnvironment
  * @see org.springframework.beans.factory.config.PlaceholderConfigurerSupport
  * @see org.springframework.beans.factory.config.PropertyPlaceholderConfigurer
+ *
+ * spring提供的一个工具类，用于解析bean定义中属性值里面的占位符，此类不能被直接实例化使用
  */
 public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerSupport implements EnvironmentAware {
 

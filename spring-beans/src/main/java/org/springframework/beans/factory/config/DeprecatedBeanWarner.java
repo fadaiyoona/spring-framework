@@ -29,6 +29,8 @@ import org.springframework.util.StringUtils;
  *
  * @author Arjen Poutsma
  * @since 3.0.3
+ *
+ * 检测废弃的bean对象，并记录用户指定的bean类型
  */
 public class DeprecatedBeanWarner implements BeanFactoryPostProcessor {
 

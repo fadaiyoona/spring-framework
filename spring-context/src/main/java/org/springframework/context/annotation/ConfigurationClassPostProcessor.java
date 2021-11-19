@@ -83,6 +83,12 @@ import org.springframework.util.ClassUtils;
  * @author Phillip Webb
  * @author Sam Brannen
  * @since 3.0
+ *
+ * 此类是一个后置处理器的类，主要功能是参与BeanFactory的建造，主要功能如下
+ *   1、解析加了@Configuration的配置类
+ *   2、解析@ComponentScan扫描的包
+ *   3、解析@ComponentScans扫描的包
+ *   4、解析@Import注解
  */
 public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPostProcessor,
 		PriorityOrdered, ResourceLoaderAware, BeanClassLoaderAware, EnvironmentAware {
@@ -95,6 +101,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * {@link #setBeanNameGenerator} with a unified user-level bean name generator.
 	 * @since 5.2
 	 * @see #setBeanNameGenerator
+	 *
+	 * 使用类的全限定名作为bean的默认生成策略
 	 */
 	public static final AnnotationBeanNameGenerator IMPORT_BEAN_NAME_GENERATOR =
 			new FullyQualifiedAnnotationBeanNameGenerator();
@@ -128,12 +136,15 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	@Nullable
 	private ConfigurationClassBeanDefinitionReader reader;
 
+	// 是否使用本地xml配置的beanNameGenerator生成器
 	private boolean localBeanNameGeneratorSet = false;
 
 	/* Using short class names as default bean names by default. */
+	// 使用短类名作为bean名称生成策略
 	private BeanNameGenerator componentScanBeanNameGenerator = AnnotationBeanNameGenerator.INSTANCE;
 
 	/* Using fully qualified class names as default bean names by default. */
+	// 使用类的全限定名作为bean默认生成策略
 	private BeanNameGenerator importBeanNameGenerator = IMPORT_BEAN_NAME_GENERATOR;
 
 

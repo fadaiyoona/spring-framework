@@ -1599,7 +1599,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		if (pvs != null) {
 			// 这一步并没有很看懂是做了什么。pvs调试中都没有承载到属性，在上面发现依赖的属性，就直接给属性设置上值了。
 			// 在AutowiredAnnotationBeanPostProcessor中也没有看到往pvs中添加值？？。。。
-			// (是不是自己的InstantiationAwareBeanPostProcessor中来的呢？)
+			// (是不是自己的InstantiationAwareBeanPostProcessor中来的呢？)从配置文件从读取也是走这里的赋值
 			// 如果是自己的InstantiationAwareBeanPostProcessor，这个要注意了。一定要提供setter方法才行。。
 			// 不是很理解为什么@Autowired这种方式注入可以不用提供setter，而这个非要要求。。
 			applyPropertyValues(beanName, mbd, bw, pvs);
