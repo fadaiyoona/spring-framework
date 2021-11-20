@@ -86,7 +86,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
 		// 初始化Bean定义信息加载的两元大将
 		this();
-		// 注册Bean定义信息
+		// 注册启动的配置类的BeanDefinition
 		register(componentClasses);
 		// 刷新容器
 		refresh();

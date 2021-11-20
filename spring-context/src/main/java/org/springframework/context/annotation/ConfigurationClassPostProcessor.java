@@ -292,7 +292,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * {@link Configuration} classes.
 	 */
 	// 解释一下：我们配置类是什么时候注册进去的呢？？？(此处只讲注解驱动的Spring和SpringBoot)
-	// 注解驱动的Spring为：自己在`MyWebAppInitializer`里面自己手动指定进去的
+	// 注解驱动的Spring为：自己在`WebApplicationInitializer`里面自己手动指定进去的
 	// SpringBoot为它自己的main引导类里去加载进来的，后面详说SpringBoot部分
 	public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
 		// 配置类Bean定义
@@ -300,7 +300,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		// 获取已经注册的bean名称
 		String[] candidateNames = registry.getBeanDefinitionNames();
 
+		// 遍历所有要处理的beanDefinition的名称,筛选对应的beanDefinition（被注解修饰的配置类）
 		for (String beanName : candidateNames) {
+			// 获取指定名称的BeanDefinition对象
 			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
 			// 这个判断很有意思~~~ 如果你的beanDef现在就已经确定了是full或者lite，说明你肯定已经被解析过了，，所以再来的话输出个debug即可（其实我觉得输出warn也行~~~）
 			if (beanDef.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE) != null) {
@@ -310,6 +312,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			}
 			// 检查是否是@Configuration的Class,如果是就标记下属性：full 或者lite。beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL)
 			// 加入到configCandidates里保存配置文件类的定义
+			// 如果Configuration配置proxyBeanMethods代理为true则为full
+			// 如果加了@Bean、@Component、@ComponentScan、@Import、@ImportResource注解，则设置为lite
+			// 如果配置类上被@Order注解标注，则设置BeanDefinition的order属性值
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
 			}
@@ -330,16 +335,20 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		});
 
 		// Detect any custom bean name generation strategy supplied through the enclosing application context
-		// 此处registry是DefaultListableBeanFactory 这里会进去
 		// 尝试着给Bean扫描方式，以及import方法的BeanNameGenerator赋值(若我们都没指定，那就是默认的AnnotationBeanNameGenerator：扫描为首字母小写，import为全类名)
 		SingletonBeanRegistry sbr = null;
 		if (registry instanceof SingletonBeanRegistry) {
 			sbr = (SingletonBeanRegistry) registry;
+			// 判断是否有自定义的beanName生成器
 			if (!this.localBeanNameGeneratorSet) {
+				// 获取自定义的beanName生成器
 				BeanNameGenerator generator = (BeanNameGenerator) sbr.getSingleton(
 						AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR);
+				// 如果有自定义的命名生成策略
 				if (generator != null) {
+					//设置组件扫描的beanName生成策略
 					this.componentScanBeanNameGenerator = generator;
+					// 设置import bean name生成策略
 					this.importBeanNameGenerator = generator;
 				}
 			}
@@ -359,11 +368,24 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 				this.resourceLoader, this.componentScanBeanNameGenerator, registry);
 
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
-		// 装载已经处理过的配置类，最大长度为：configCandidates.size()
+		// 装载已经处理过的配置类
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
-			// 核心方法：具体详解如下
-			// 只有Scan的才真正进入注册中心，其余比如@Import的都还不在里面~
+			/**
+			 * 核心方法：具体详解如下
+			 * 解析带有@Controller、@Import、@ImportResource、@ComponentScan、@ComponentScans、@Bean的BeanDefinition
+			 * 只是将配置类进行解析，解析完的结果存放在ConfigurationClass对象中，在
+			 * @see ConfigurationClassParser#configurationClasses 中存储
+			 *
+			 * 在这个步骤前，配置类的bean定义信息是已经注册好了的
+			 * 在这个步骤中，bean定义信息可能会新注册，如：ComponentScan扫描到了组件（@Component），会直接进行注册
+			 * 在这个步骤后，还可能存在未注册的bean定义，如：
+			 * 配置类中定义了@Bean的类或方法(@see org.springframework.context.annotation.ConfigurationClass#beanMethods)，
+			 * 配置类中存在内部类等等
+			 *
+			 * 因此，解析完之后，需要提供配置类，给
+			 * @see ConfigurationClassBeanDefinitionReader#loadBeanDefinitions(java.util.Set) 进行处理
+			 */
 			parser.parse(candidates);
 			// 校验 配置类不能使final的，因为需要使用CGLIB生成代理对象，见postProcessBeanFactory方法
 			parser.validate();
@@ -379,14 +401,19 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 						registry, this.sourceExtractor, this.resourceLoader, this.environment,
 						this.importBeanNameGenerator, parser.getImportRegistry());
 			}
-			// 此处注意：调用了ConfigurationClassBeanDefinitionReader的loadBeanDefinitionsd的加载配置文件里面的@Bean/@Import们，具体讲解请参见下面
-			// 这个方法是非常重要的，因为它决定了向容器注册Bean定义信息的顺序问题~~~
-			// 关于它的原始代码 下面有着重分析，因此此处只说一个结论，顺序
+			/**
+			 * 加载配置文件里面（上面parser解析完的配置类）的@Bean/@Import们，在此处将配置类中包含的bean定义信息注册到容器中
+			 * 这个方法是非常重要的，因为它决定了向容器注册Bean定义信息的顺序问题~~~
+			 */
 			this.reader.loadBeanDefinitions(configClasses);
 			alreadyParsed.addAll(configClasses);
 
 			candidates.clear();
-			// 如果registry中注册的bean的数量 大于 之前获得的数量,则意味着在解析过程中又新加入了很多,那么就需要对其进行解继续析
+			// 这里判断registry.getBeanDefinitionCount() > candidateNames.length的目的是为了知道reader.loadBeanDefinitions(configClasses)这一步有没有向BeanDefinitionMap中添加新的BeanDefinition
+			// 实际上就是看配置类(例如AppConfig类会向BeanDefinitionMap中添加bean)
+			// 如果有，registry.getBeanDefinitionCount()就会大于candidateNames.length
+			// 这样就需要再次遍历新加入的BeanDefinition，并判断这些bean是否已经被解析过了，如果未解析，需要重新进行解析
+			// 这里的AppConfig类向容器中添加的bean，实际上在parser.parse()这一步已经全部被解析了
 			if (registry.getBeanDefinitionCount() > candidateNames.length) {
 				String[] newCandidateNames = registry.getBeanDefinitionNames();
 				Set<String> oldCandidateNames = new HashSet<>(Arrays.asList(candidateNames));
@@ -395,6 +422,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					alreadyParsedClasses.add(configurationClass.getMetadata().getClassName());
 				}
 				for (String candidateName : newCandidateNames) {
+					// 如果有未解析的类，则将其添加到candidates中，这样candidates不为空，就会进入到下一次的while的循环中
 					// 这一步挺有意思：若老的oldCandidateNames不包含。也就是说你是新进来的候选的Bean定义们，那就进一步的进行一个处理
 					// 比如这里的DelegatingWebMvcConfiguration，他就是新进的，因此它继续往下走
 					// 这个@Import进来的配置类最终会被ConfigurationClassPostProcessor这个后置处理器的postProcessBeanFactory 方法，进行处理和cglib增强

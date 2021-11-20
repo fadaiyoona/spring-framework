@@ -70,6 +70,10 @@ import org.springframework.util.StringUtils;
  * @author Sam Brannen
  * @since 3.0
  * @see ConfigurationClassParser
+ *
+ * 读取配置类中的BeanDefinition，并进行注册
+ * @see ConfigurationClass
+ * @see ConfigurationClassBeanDefinitionReader#loadBeanDefinitions(java.util.Set)
  */
 class ConfigurationClassBeanDefinitionReader {
 

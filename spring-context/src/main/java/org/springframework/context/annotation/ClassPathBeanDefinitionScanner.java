@@ -294,7 +294,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 				// 拿到Scope元数据：此处为singleton
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
 				candidate.setScope(scopeMetadata.getScopeName());
-				// 生成Bean的名称，默认为首字母小写。此处为"rootConfig"
+				// 生成Bean的名称，默认为首字母小写。
 				String beanName = this.beanNameGenerator.generateBeanName(candidate, this.registry);
 				// 此处为扫描的Bean，为ScannedGenericBeanDefinition，所以肯定为true
 				// 因此进来，执行postProcessBeanDefinition（对Bean定义信息做）   如下详解
@@ -365,17 +365,23 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 * bean definition has been found for the specified name
 	 */
 	protected boolean checkCandidate(String beanName, BeanDefinition beanDefinition) throws IllegalStateException {
+		// 如果该注册对象中没有包含beanName,则返回true，代表可以注册该bean定义
 		if (!this.registry.containsBeanDefinition(beanName)) {
 			return true;
 		}
+		// 获取该beanName对应的BeanDefinition
 		BeanDefinition existingDef = this.registry.getBeanDefinition(beanName);
+		// 获取原始的BeanDefinition（使用了代理的BeanDefinition会有原始的BeanDefinition）
 		BeanDefinition originatingDef = existingDef.getOriginatingBeanDefinition();
 		if (originatingDef != null) {
+			// 如果有原始的BeanDefinition，则使用原始的BeanDefinition
 			existingDef = originatingDef;
 		}
+		// 检查新BeanDefinition是否与原BeanDefinition兼容，如果兼容则返回false，跳过注册
 		if (isCompatible(beanDefinition, existingDef)) {
 			return false;
 		}
+		// 如果不兼容，则抛异常
 		throw new ConflictingBeanDefinitionException("Annotation-specified bean name '" + beanName +
 				"' for bean class [" + beanDefinition.getBeanClassName() + "] conflicts with existing, " +
 				"non-compatible bean definition of same name and class [" + existingDef.getBeanClassName() + "]");

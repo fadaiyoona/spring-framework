@@ -67,9 +67,12 @@ public class AnnotationBeanNameGenerator implements BeanNameGenerator {
 	 * A convenient constant for a default {@code AnnotationBeanNameGenerator} instance,
 	 * as used for component scanning purposes.
 	 * @since 5.2
+	 *
+	 * 默认AnnotationBeanNameGenerator实例的方便变量，用于组件扫描目的（即@Component注解及@ComponentScan注解扫描包）bean名称生成
 	 */
 	public static final AnnotationBeanNameGenerator INSTANCE = new AnnotationBeanNameGenerator();
 
+	// @Component注解类常量
 	private static final String COMPONENT_ANNOTATION_CLASSNAME = "org.springframework.stereotype.Component";
 
 	private final Map<String, Set<String>> metaAnnotationTypesCache = new ConcurrentHashMap<>();
@@ -78,13 +81,16 @@ public class AnnotationBeanNameGenerator implements BeanNameGenerator {
 	@Override
 	public String generateBeanName(BeanDefinition definition, BeanDefinitionRegistry registry) {
 		if (definition instanceof AnnotatedBeanDefinition) {
+			// 通过注解的属性值获取bean名称
 			String beanName = determineBeanNameFromAnnotation((AnnotatedBeanDefinition) definition);
 			if (StringUtils.hasText(beanName)) {
 				// Explicit bean name found.
+				// 显式的找到bean名称
 				return beanName;
 			}
 		}
 		// Fallback: generate a unique default bean name.
+		// 如果注解未指定bean名称，则生成一个唯一的默认bean名称
 		return buildDefaultBeanName(definition, registry);
 	}
 
@@ -92,6 +98,8 @@ public class AnnotationBeanNameGenerator implements BeanNameGenerator {
 	 * Derive a bean name from one of the annotations on the class.
 	 * @param annotatedDef the annotation-aware bean definition
 	 * @return the bean name, or {@code null} if none is found
+	 *
+	 * 从类上的一个注解派生bean名称（即通过注解的属性value值来获取唯一的bean名称）
 	 */
 	@Nullable
 	protected String determineBeanNameFromAnnotation(AnnotatedBeanDefinition annotatedDef) {
@@ -105,6 +113,7 @@ public class AnnotationBeanNameGenerator implements BeanNameGenerator {
 					Set<String> result = amd.getMetaAnnotationTypes(key);
 					return (result.isEmpty() ? Collections.emptySet() : result);
 				});
+				// 检查给定的注释是否允许通过其注释的value属性构造bean名称
 				if (isStereotypeWithNameValue(type, metaTypes, attributes)) {
 					Object value = attributes.get("value");
 					if (value instanceof String) {
@@ -130,6 +139,8 @@ public class AnnotationBeanNameGenerator implements BeanNameGenerator {
 	 * @param metaAnnotationTypes the names of meta-annotations on the given annotation
 	 * @param attributes the map of attributes for the given annotation
 	 * @return whether the annotation qualifies as a stereotype with component name
+	 *
+	 * 检查给定的注释是否允许通过其注释的value属性构造bean名称
 	 */
 	protected boolean isStereotypeWithNameValue(String annotationType,
 			Set<String> metaAnnotationTypes, @Nullable Map<String, Object> attributes) {
@@ -148,6 +159,8 @@ public class AnnotationBeanNameGenerator implements BeanNameGenerator {
 	 * @param definition the bean definition to build a bean name for
 	 * @param registry the registry that the given bean definition is being registered with
 	 * @return the default bean name (never {@code null})
+	 *
+	 * 从给定的bean定义派生一个默认的bean名称，即类名首字符小写
 	 */
 	protected String buildDefaultBeanName(BeanDefinition definition, BeanDefinitionRegistry registry) {
 		return buildDefaultBeanName(definition);
@@ -162,6 +175,8 @@ public class AnnotationBeanNameGenerator implements BeanNameGenerator {
 	 * name may be an issue if you are autowiring by name.
 	 * @param definition the bean definition to build a bean name for
 	 * @return the default bean name (never {@code null})
+	 *
+	 * 从给定的bean定义派生一个默认的bean名称，即类名首字符小写
 	 */
 	protected String buildDefaultBeanName(BeanDefinition definition) {
 		String beanClassName = definition.getBeanClassName();

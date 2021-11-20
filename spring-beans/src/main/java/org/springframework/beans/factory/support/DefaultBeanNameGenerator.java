@@ -31,10 +31,15 @@ public class DefaultBeanNameGenerator implements BeanNameGenerator {
 	 * A convenient constant for a default {@code DefaultBeanNameGenerator} instance,
 	 * as used for {@link AbstractBeanDefinitionReader} setup.
 	 * @since 5.2
+	 *
+	 * DefaultBeanNameGenerator实例常量，用于在AbstractBeanDefinitionReader类中属性beanNameGenerator的设置
 	 */
 	public static final DefaultBeanNameGenerator INSTANCE = new DefaultBeanNameGenerator();
 
 
+	/**
+	 * 	通过BeanDefinitionReaderUtils工具类的generateBeanName方法生成指定BeanDefinition的bean名称
+	 */
 	@Override
 	public String generateBeanName(BeanDefinition definition, BeanDefinitionRegistry registry) {
 		return BeanDefinitionReaderUtils.generateBeanName(definition, registry);
