@@ -8,7 +8,7 @@ import org.springframework.core.type.AnnotationMetadata;
 
 @Conditional({WindowsCondition.class})
 @Configuration
-public class BeanConfig implements ImportAware {
+public class BeanConfig {
 	private AnnotationMetadata importMetadata;
 
     @Bean(name = "bill")
@@ -20,10 +20,4 @@ public class BeanConfig implements ImportAware {
     public Person person2(){
         return new Person("Linus",48);
     }
-
-	@Override
-	public void setImportMetadata(AnnotationMetadata importMetadata) {
-    	this.importMetadata = importMetadata;
-		System.out.println(this.importMetadata);
-	}
 }
