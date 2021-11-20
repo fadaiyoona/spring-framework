@@ -11,8 +11,8 @@
 <!--    <bean id="fruitPlate2" class="com.FruitPlate">-->
 <!--        <lookup-method name="getFruit" bean="banana"/>-->
 <!--    </bean>-->
-    <bean id="dogReplaceMethod" class="com.methodOverrides.replace.ReplaceDog"/>
-    <bean id="originalDogReplaceMethod" class="com.methodOverrides.replace.OriginalDog">
+    <bean id="dogReplaceMethod" class="com.MethodOverrides.replace.ReplaceDog"/>
+    <bean id="originalDogReplaceMethod" class="com.MethodOverrides.replace.OriginalDog">
         <replaced-method name="sayHello" replacer="dogReplaceMethod">
             <arg-type match="java.lang.String"></arg-type>
         </replaced-method>

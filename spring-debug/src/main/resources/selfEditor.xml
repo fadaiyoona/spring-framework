@@ -3,7 +3,7 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="customer" class="com.selfEditor.Customer">
+    <bean id="customer" class="com.SelfEditor.xml.Customer">
         <property name="name" value="zhangsan"></property>
         <property name="address" value="河北省_邯郸市_武安市"></property>
     </bean>
@@ -17,8 +17,8 @@
     <bean class="org.springframework.beans.factory.config.CustomEditorConfigurer">
         <property name="customEditors">
             <map>
-                <entry key="com.selfEditor.Address">
-                    <value>com.selfEditor.AddressPropertyEditor</value>
+                <entry key="com.SelfEditor.xml.Address">
+                    <value>com.SelfEditor.xml.AddressPropertyEditor</value>
                 </entry>
             </map>
         </property>

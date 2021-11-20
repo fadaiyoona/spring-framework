@@ -8,7 +8,7 @@ import org.springframework.core.annotation.Order;
 //@ComponentScan("com.selftag")
 public class ComponentScanConfiguration {
 
-    @ComponentScan("com.selftag")
+    @ComponentScan("com.SelfTag")
     @Configuration
     @Order(90)
     class InnerClass{

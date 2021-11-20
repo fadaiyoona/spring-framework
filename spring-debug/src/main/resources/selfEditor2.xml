@@ -19,8 +19,8 @@
     <bean class="org.springframework.beans.factory.config.CustomEditorConfigurer">
         <property name="customEditors">
             <map>
-                <entry key="com.selfeditor2.Address">
-                    <value>com.selfeditor2.AddressPropertyEditor</value>
+                <entry key="com.SelfEditor.annotation.Address">
+                    <value>com.SelfEditor.annotation.AddressPropertyEditor</value>
                 </entry>
             </map>
         </property>

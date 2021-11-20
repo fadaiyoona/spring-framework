@@ -12,7 +12,7 @@
     <context:component-scan base-package="com" ></context:component-scan>
     <bean id="user" class="com.supplier.User" ></bean>
     <context:property-placeholder location="classpath:db.properties" ></context:property-placeholder>
-    <bean class="com.selfBeanFactoryPostProcessor.MyBeanDefinitionRegistryPostProcessor"></bean>
+    <bean class="com.SelfBeanFactoryPostProcessor.MyBeanDefinitionRegistryPostProcessor"></bean>
 <!--    <bean id="person2" class="com.other.Person" depends-on="">-->
 <!--        <constructor-arg index="0" value="2">-->
 <!--        </constructor-arg>-->

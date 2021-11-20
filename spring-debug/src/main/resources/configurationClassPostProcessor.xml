@@ -11,7 +11,7 @@
 
 	<context:property-placeholder location="classpath:db.properties" ></context:property-placeholder>
 
-	<bean class="com.selfBeanFactoryPostProcessor.MyBeanDefinitionRegistryPostProcessor"></bean>
+	<bean class="com.SelfBeanFactoryPostProcessor.MyBeanDefinitionRegistryPostProcessor"></bean>
 
 	<bean id="user" class="com.supplier.User" ></bean>
 
