@@ -60,6 +60,8 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 		implements BeanDefinition, Cloneable {
 
 	/**
+	 *
+	 *
 	 * Constant for the default scope name: {@code ""}, equivalent to singleton
 	 * status unless overridden from a parent bean definition (if applicable).
 	 */
@@ -100,18 +102,24 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	public static final int AUTOWIRE_AUTODETECT = AutowireCapableBeanFactory.AUTOWIRE_AUTODETECT;
 
 	/**
+	 * 默认不检查
+	 *
 	 * Constant that indicates no dependency check at all.
 	 * @see #setDependencyCheck
 	 */
 	public static final int DEPENDENCY_CHECK_NONE = 0;
 
 	/**
+	 * 对依赖对象检查
+	 *
 	 * Constant that indicates dependency checking for object references.
 	 * @see #setDependencyCheck
 	 */
 	public static final int DEPENDENCY_CHECK_OBJECTS = 1;
 
 	/**
+	 * 对原始类型检查
+	 *
 	 * Constant that indicates dependency checking for "simple" properties.
 	 * @see #setDependencyCheck
 	 * @see org.springframework.beans.BeanUtils#isSimpleProperty
@@ -119,6 +127,8 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	public static final int DEPENDENCY_CHECK_SIMPLE = 2;
 
 	/**
+	 * 对所有属性检查
+	 *
 	 * Constant that indicates dependency checking for all properties
 	 * (object references as well as "simple" properties).
 	 * @see #setDependencyCheck
@@ -249,7 +259,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	private String initMethodName;
 
 	/**
-	 * 小会方法，对应bean属性destroy-method
+	 * 销毁方法，对应bean属性destroy-method
 	 */
 	@Nullable
 	private String destroyMethodName;
@@ -473,6 +483,8 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	}
 
 	/**
+	 * this.beanClasses是对象，可以是String也可以是Class
+	 *
 	 * Return the current bean class name of this bean definition.
 	 */
 	@Override
@@ -488,6 +500,8 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	}
 
 	/**
+	 * 设置BeanClass
+	 *
 	 * Specify the class for this bean.
 	 * @see #setBeanClassName(String)
 	 */
@@ -529,6 +543,8 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	}
 
 	/**
+	 * 判断beanClass是否是个Class对象
+	 *
 	 * Return whether this definition specifies a bean class.
 	 * @see #getBeanClass()
 	 * @see #setBeanClass(Class)
@@ -548,10 +564,12 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	 */
 	@Nullable
 	public Class<?> resolveBeanClass(@Nullable ClassLoader classLoader) throws ClassNotFoundException {
+		// 获取className
 		String className = getBeanClassName();
 		if (className == null) {
 			return null;
 		}
+		// 获取当前bean对应的Class对象
 		Class<?> resolvedClass = ClassUtils.forName(className, classLoader);
 		this.beanClass = resolvedClass;
 		return resolvedClass;
@@ -1233,6 +1251,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	 * @throws BeanDefinitionValidationException in case of validation failure
 	 */
 	protected void prepareMethodOverride(MethodOverride mo) throws BeanDefinitionValidationException {
+		// 获取对应类中对应方法名的个数
 		int count = ClassUtils.getMethodCountForName(getBeanClass(), mo.getMethodName());
 		if (count == 0) {
 			throw new BeanDefinitionValidationException(
@@ -1241,6 +1260,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 		}
 		else if (count == 1) {
 			// Mark override as not overloaded, to avoid the overhead of arg type checking.
+			// 标记methodOverride暂未被覆盖，避免参数类型检查的开销
 			mo.setOverloaded(false);
 		}
 	}
@@ -1257,6 +1277,8 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	}
 
 	/**
+	 * 定义了一个克隆的抽象方法
+	 *
 	 * Clone this bean definition.
 	 * To be implemented by concrete subclasses.
 	 * @return the cloned bean definition object

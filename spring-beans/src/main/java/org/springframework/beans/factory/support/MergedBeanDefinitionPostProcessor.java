@@ -36,6 +36,10 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
  * @see org.springframework.beans.factory.config.ConfigurableBeanFactory#getMergedBeanDefinition
  *
  * 执行时机：实例化Bean之后，初始化Bean之前执行
+ *
+ * 目前看起来spring对他的使用也用处不是特别大，在
+ * @see org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
+ * 中有实现，做了个预先的属性解析的缓存，用于在@Autowired属性依赖注入的时候使用
  */
 public interface MergedBeanDefinitionPostProcessor extends BeanPostProcessor {
 
@@ -45,6 +49,8 @@ public interface MergedBeanDefinitionPostProcessor extends BeanPostProcessor {
 	 * @param beanType the actual type of the managed bean instance
 	 * @param beanName the name of the bean
 	 * @see AbstractAutowireCapableBeanFactory#applyMergedBeanDefinitionPostProcessors
+	 *
+	 *spring通过此方法找出所有需要注入的字段，同时做缓存
 	 */
 	void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName);
 
@@ -55,6 +61,8 @@ public interface MergedBeanDefinitionPostProcessor extends BeanPostProcessor {
 	 * @param beanName the name of the bean
 	 * @since 5.1
 	 * @see DefaultListableBeanFactory#resetBeanDefinition
+	 *
+	 * 用于在BeanDefinition被修改后，清除容器的缓存
 	 */
 	default void resetBeanDefinition(String beanName) {
 	}

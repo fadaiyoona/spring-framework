@@ -57,6 +57,8 @@ public interface DestructionAwareBeanPostProcessor extends BeanPostProcessor {
 	 * @return {@code true} if {@link #postProcessBeforeDestruction} is supposed to
 	 * be called for this bean instance eventually, or {@code false} if not needed
 	 * @since 4.3
+	 *
+	 * 判断是否要进行销毁，一般情况下都需要
 	 */
 	default boolean requiresDestruction(Object bean) {
 		return true;

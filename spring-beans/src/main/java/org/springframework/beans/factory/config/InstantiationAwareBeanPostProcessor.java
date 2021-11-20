@@ -44,6 +44,8 @@ import org.springframework.lang.Nullable;
  * @see org.springframework.aop.framework.autoproxy.AbstractAutoProxyCreator#setCustomTargetSourceCreators
  * @see org.springframework.aop.framework.autoproxy.target.LazyInitTargetSourceCreator
  *
+ * 继承自BeanPostProcessor，添加了实例化前，实例化后，属性注入后的处理方法
+ *
  * 在bean创建之前执行，给BeanPostProcessors一个机会来返回一个代理对象代替目标对象 什么动态代理之类的，都在这里实现的
  * 主要作用在于目标对象的实例化过程中需要处理的事情，包括实例化对象的前后过程以及实例的属性设置
  */
