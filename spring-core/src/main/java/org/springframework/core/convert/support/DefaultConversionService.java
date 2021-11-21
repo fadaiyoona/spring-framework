@@ -37,6 +37,8 @@ import org.springframework.lang.Nullable;
  * @author Juergen Hoeller
  * @author Stephane Nicoll
  * @since 3.1
+ *
+ * 对一系列的converter进行注册
  */
 public class DefaultConversionService extends GenericConversionService {
 

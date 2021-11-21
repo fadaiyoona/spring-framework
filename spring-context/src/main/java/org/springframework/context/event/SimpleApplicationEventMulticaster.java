@@ -45,9 +45,17 @@ import org.springframework.util.ErrorHandler;
  * @author Juergen Hoeller
  * @author Stephane Nicoll
  * @see #setTaskExecutor
+ *
+ * 简单实现的ApplicationEventMulticaster接口
+ *
+ * 将所有事件多播给所有注册的监听器，让监听器忽略它们不感兴趣的事件。监听器通常会对传入的事件对象执行相应的 instanceof 检查
+ *
+ * 默认情况下，所有监听器都在调用线程中调用。这允许恶意监听器阻塞整个应用程序的危险，但只增加最小的开销。指定另一个任务执行器，让监听器在不同的线程中执行
+ * 例如 从线程池中执行
  */
 public class SimpleApplicationEventMulticaster extends AbstractApplicationEventMulticaster {
 
+	//当前任务线程池
 	@Nullable
 	private Executor taskExecutor;
 
@@ -57,12 +65,16 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 
 	/**
 	 * Create a new SimpleApplicationEventMulticaster.
+	 *
+	 * 创建一个新的SimpleApplicationEventMulticaster
 	 */
 	public SimpleApplicationEventMulticaster() {
 	}
 
 	/**
 	 * Create a new SimpleApplicationEventMulticaster for the given BeanFactory.
+	 *
+	 * 为给定的BeanFactory创建一个新的SimpleApplicationEventMulticaster
 	 */
 	public SimpleApplicationEventMulticaster(BeanFactory beanFactory) {
 		setBeanFactory(beanFactory);
@@ -87,6 +99,8 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 
 	/**
 	 * Return the current task executor for this multicaster.
+	 *
+	 * 返回此多播器的当前任务线程池
 	 */
 	@Nullable
 	protected Executor getTaskExecutor() {
@@ -115,6 +129,8 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 	/**
 	 * Return the current error handler for this multicaster.
 	 * @since 4.1
+	 *
+	 * 返回此多播器的当前错误处理程序
 	 */
 	@Nullable
 	protected ErrorHandler getErrorHandler() {
@@ -127,20 +143,33 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 		multicastEvent(event, resolveDefaultEventType(event));
 	}
 
+	/**
+	 * 广播事件
+	 */
 	@Override
 	public void multicastEvent(final ApplicationEvent event, @Nullable ResolvableType eventType) {
+		// 如果eventType不为null就引用eventType;否则将event转换为ResolvableType对象再引用
 		ResolvableType type = (eventType != null ? eventType : resolveDefaultEventType(event));
+		// 获取此多播器的当前任务线程池
 		Executor executor = getTaskExecutor();
+		// getApplicationListeners方法是返回与给定事件类型匹配的应用监听器集合
+		// 遍历获取所有支持event的监听器
 		for (ApplicationListener<?> listener : getApplicationListeners(event, type)) {
+			//如果executor不为null
 			if (executor != null) {
+				//使用executor回调listener的onApplicationEvent方法，传入event
 				executor.execute(() -> invokeListener(listener, event));
 			}
 			else {
+				//回调listener的onApplicationEvent方法，传入event
 				invokeListener(listener, event);
 			}
 		}
 	}
 
+	/**
+	 * 将event转换为ResolvableType对象
+	 */
 	private ResolvableType resolveDefaultEventType(ApplicationEvent event) {
 		return ResolvableType.forInstance(event);
 	}
@@ -150,28 +179,40 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 	 * @param listener the ApplicationListener to invoke
 	 * @param event the current event to propagate
 	 * @since 4.1
+	 *
+	 * 使用给定的事件调用给定的监听器
 	 */
 	protected void invokeListener(ApplicationListener<?> listener, ApplicationEvent event) {
+		// 获取此多播器的当前错误处理程序
 		ErrorHandler errorHandler = getErrorHandler();
+		// 如果errorHandler不为null
 		if (errorHandler != null) {
 			try {
+				// 回调listener的onApplicationEvent方法，传入event
 				doInvokeListener(listener, event);
 			}
 			catch (Throwable err) {
+				// 交给errorHandler接收处理err
 				errorHandler.handleError(err);
 			}
 		}
 		else {
+			// 回调listener的onApplicationEvent方法，传入event
 			doInvokeListener(listener, event);
 		}
 	}
 
+	/**
+	 * 回调listener的onApplicationEvent方法，传入 event
+	 */
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	private void doInvokeListener(ApplicationListener listener, ApplicationEvent event) {
 		try {
+			//回调listener的onApplicationEvent方法，传入event:contextrefreshListener:onapplicaitonEvent:FrameworkServlet.this.onApplicationEvent()
 			listener.onApplicationEvent(event);
 		}
 		catch (ClassCastException ex) {
+			//获取异常信息
 			String msg = ex.getMessage();
 			if (msg == null || matchesClassCastMessage(msg, event.getClass())) {
 				// Possibly a lambda-defined listener which we could not resolve the generic event type for
@@ -182,26 +223,39 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 				}
 			}
 			else {
+				//抛出异常
 				throw ex;
 			}
 		}
 	}
 
+	/**
+	 * 匹配类转换消息，以保证抛出类转换异常是因eventClass引起的
+	 */
 	private boolean matchesClassCastMessage(String classCastMessage, Class<?> eventClass) {
 		// On Java 8, the message starts with the class name: "java.lang.String cannot be cast..."
+		// 在JAVA8中，消息以类名开始：'java.lang.String不能被转换..'
+		// 如果classCastMessage是以eventClass类名开头，返回true
 		if (classCastMessage.startsWith(eventClass.getName())) {
 			return true;
 		}
 		// On Java 11, the message starts with "class ..." a.k.a. Class.toString()
+		// 在JAVA11中，消息是以'class ...' 开始，选择Class.toString
+		// 如果classCastMessage是以eventClass.toString()开头，返回true
 		if (classCastMessage.startsWith(eventClass.toString())) {
 			return true;
 		}
 		// On Java 9, the message used to contain the module name: "java.base/java.lang.String cannot be cast..."
+		// 在Java 9, 用于包含模块名的消息：'java.base/java.lang.String 不能被转换'
+		// 找出classCastMessage的'/'第一个索引位置
 		int moduleSeparatorIndex = classCastMessage.indexOf('/');
+		// 如果找到了'/'位置 && '/'后面的字符串是以eventClass类名开头
 		if (moduleSeparatorIndex != -1 && classCastMessage.startsWith(eventClass.getName(), moduleSeparatorIndex + 1)) {
 			return true;
 		}
 		// Assuming an unrelated class cast failure...
+		// 假设一个不相关的类转换失败
+		// 返回false
 		return false;
 	}
 

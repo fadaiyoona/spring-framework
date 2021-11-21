@@ -33,18 +33,24 @@ import org.springframework.lang.Nullable;
  * @author Juergen Hoeller
  * @author Stephane Nicoll
  * @see ApplicationListener
+ *
+ * ApplicationEventMulticaster接口的实现类可以管理多个ApplicationListener监听器对象，并且发布事件到监听器
  */
 public interface ApplicationEventMulticaster {
 
 	/**
 	 * Add a listener to be notified of all events.
 	 * @param listener the listener to add
+	 *
+	 * 添加监听器以接受所有的事件通知
 	 */
 	void addApplicationListener(ApplicationListener<?> listener);
 
 	/**
 	 * Add a listener bean to be notified of all events.
 	 * @param listenerBeanName the name of the listener bean to add
+	 *
+	 * 添加监听器以接收所有的事件通知，参数是监听器bean名称
 	 */
 	void addApplicationListenerBean(String listenerBeanName);
 
@@ -57,6 +63,8 @@ public interface ApplicationEventMulticaster {
 	/**
 	 * Remove a listener bean from the notification list.
 	 * @param listenerBeanName the name of the listener bean to remove
+	 *
+	 * 通知列表中删除监听器
 	 */
 	void removeApplicationListenerBean(String listenerBeanName);
 
@@ -64,6 +72,8 @@ public interface ApplicationEventMulticaster {
 	 * Remove all listeners registered with this multicaster.
 	 * <p>After a remove call, the multicaster will perform no action
 	 * on event notification until new listeners are registered.
+	 *
+	 * 删除注册到代理上的所有监听器，在remove调用之后，代理不会对事件通知执行任何操作直到有新的监听器注册
 	 */
 	void removeAllListeners();
 
@@ -72,6 +82,8 @@ public interface ApplicationEventMulticaster {
 	 * <p>Consider using {@link #multicastEvent(ApplicationEvent, ResolvableType)}
 	 * if possible as it provides better support for generics-based events.
 	 * @param event the event to multicast
+	 *
+	 * 将给定的事件广播到对应的监听器上
 	 */
 	void multicastEvent(ApplicationEvent event);
 
@@ -82,6 +94,8 @@ public interface ApplicationEventMulticaster {
 	 * @param event the event to multicast
 	 * @param eventType the type of event (can be {@code null})
 	 * @since 4.2
+	 *
+	 * 将应用程序事件广播到对应的监听器上
 	 */
 	void multicastEvent(ApplicationEvent event, @Nullable ResolvableType eventType);
 
