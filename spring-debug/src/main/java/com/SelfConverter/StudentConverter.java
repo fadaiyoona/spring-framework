@@ -1,4 +1,4 @@
-package com.selfConverter;
+package com.SelfConverter;
 
 import org.springframework.core.convert.converter.Converter;
 

@@ -5,10 +5,10 @@
 <!--    <bean id="apple" class="com.Apple" scope="prototype"/>-->
 <!--    <bean id="banana" class="com.Banana" scope="prototype" />-->
 
-<!--    <bean id="fruitPlate1" class="com.FruitPlate">-->
+<!--    <bean id="fruitPlate1" class="com.MethodOverrides.lookup.FruitPlate">-->
 <!--        <lookup-method name="getFruit" bean="apple"/>-->
 <!--    </bean>-->
-<!--    <bean id="fruitPlate2" class="com.FruitPlate">-->
+<!--    <bean id="fruitPlate2" class="com.MethodOverrides.lookup.FruitPlate">-->
 <!--        <lookup-method name="getFruit" bean="banana"/>-->
 <!--    </bean>-->
     <bean id="dogReplaceMethod" class="com.MethodOverrides.replace.ReplaceDog"/>

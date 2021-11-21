@@ -1,4 +1,4 @@
-package com.selfConverter;
+package com.SelfConverter;
 
 public class Student {
 

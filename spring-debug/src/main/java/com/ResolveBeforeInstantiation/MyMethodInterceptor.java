@@ -1,4 +1,4 @@
-package com.resolveBeforeInstantiation;
+package com.ResolveBeforeInstantiation;
 
 import org.springframework.cglib.proxy.MethodInterceptor;
 import org.springframework.cglib.proxy.MethodProxy;

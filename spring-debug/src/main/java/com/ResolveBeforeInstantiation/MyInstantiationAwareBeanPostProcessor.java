@@ -1,4 +1,4 @@
-package com.resolveBeforeInstantiation;
+package com.ResolveBeforeInstantiation;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValues;

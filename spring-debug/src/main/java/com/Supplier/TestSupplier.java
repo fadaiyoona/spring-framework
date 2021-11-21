@@ -1,4 +1,4 @@
-package com.supplier;
+package com.Supplier;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;

@@ -1,4 +1,4 @@
-package com.resolveBeforeInstantiation;
+package com.ResolveBeforeInstantiation;
 
 public class BeforeInstantiation {
 

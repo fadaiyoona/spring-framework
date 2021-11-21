@@ -3,6 +3,6 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="beforeInstantiation" class="com.resolveBeforeInstantiation.BeforeInstantiation"></bean>
-    <bean id="myInstantiationAwareBeanPostProcessor" class="com.resolveBeforeInstantiation.MyInstantiationAwareBeanPostProcessor"></bean>
+    <bean id="beforeInstantiation" class="com.ResolveBeforeInstantiation.BeforeInstantiation"></bean>
+    <bean id="myInstantiationAwareBeanPostProcessor" class="com.ResolveBeforeInstantiation.MyInstantiationAwareBeanPostProcessor"></bean>
 </beans>

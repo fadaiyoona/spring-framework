@@ -13,7 +13,7 @@
 
 	<bean class="com.SelfBeanFactoryPostProcessor.MyBeanDefinitionRegistryPostProcessor"></bean>
 
-	<bean id="user" class="com.supplier.User" ></bean>
+	<bean id="user" class="com.Supplier.User" ></bean>
 
 	<bean id="person" class="com.ConfigurationClassPostProcessor.shouldSkip.Person" scope="prototype">
 		<property name="age" value="1"></property>

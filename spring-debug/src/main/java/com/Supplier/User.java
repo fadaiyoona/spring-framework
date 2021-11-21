@@ -1,4 +1,4 @@
-package com.supplier;
+package com.Supplier;
 
 public class User {
 

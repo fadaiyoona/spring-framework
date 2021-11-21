@@ -8,10 +8,10 @@
     </bean>
     <bean id="banana" class="com.MethodOverrides.lookup.Banana" scope="prototype">
     </bean>
-<!--    <bean id="fruitplate1" class="com.FruitPlate">-->
-<!--        <lookup-method name="getFruit" bean="apple"></lookup-method>-->
-<!--    </bean>-->
-<!--    <bean id="fruitplate2" class="com.FruitPlate">-->
-<!--        <lookup-method name="getFruit" bean="banana"></lookup-method>-->
-<!--    </bean>-->
+    <bean id="fruitplate1" class="com.MethodOverrides.lookup.FruitPlate">
+        <lookup-method name="getFruit" bean="apple"></lookup-method>
+    </bean>
+    <bean id="fruitplate2" class="com.MethodOverrides.lookup.FruitPlate">
+        <lookup-method name="getFruit" bean="banana"></lookup-method>
+    </bean>
 </beans>
