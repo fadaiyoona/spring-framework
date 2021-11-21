@@ -133,10 +133,13 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	// 该处理器支持解析的注解们，默认支持的是3个
 	private final Set<Class<? extends Annotation>> autowiredAnnotationTypes = new LinkedHashSet<>(4);
 
+	// @Autowired(required = false)这个注解的属性值名称
 	private String requiredParameterName = "required";
 
+	// 这个值一般请不要改变（若改成false，效果required = false的作用是相反的了）
 	private boolean requiredParameterValue = true;
 
 	private int order = Ordered.LOWEST_PRECEDENCE - 2;
@@ -144,10 +147,16 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	@Nullable
 	private ConfigurableListableBeanFactory beanFactory;
 
+	// 对@Lookup方法的支持
 	private final Set<String> lookupMethodsChecked = Collections.newSetFromMap(new ConcurrentHashMap<>(256));
 
+	// 构造函数候选器缓存
 	private final Map<Class<?>, Constructor<?>[]> candidateConstructorsCache = new ConcurrentHashMap<>(256);
 
+	// 方法注入、字段filed注入
+	// 此处InjectionMetadata这个类非常重要，到了此处@Autowired注解含义已经没有了，完全被准备成这个元数据了
+	// InjectionMetadata持有targetClass、Collection<InjectedElement> injectedElements等两个重要属性
+	// 其中InjectedElement这个抽象类最重要的两个实现为：AutowiredFieldElement和AutowiredMethodElement
 	private final Map<String, InjectionMetadata> injectionMetadataCache = new ConcurrentHashMap<>(256);
 
 
@@ -241,6 +250,11 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	}
 
 
+	/**
+	 * 处理合并的bean定义信息
+	 * 1、解析@Autowired等注解然后转换
+	 * 2、把注解信息转换为InjectionMetadata然后缓存到上面的injectionMetadataCache里面
+	 */
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
 		// findAutowiringMetadata完成了对需要注入属性的筛选工作，将筛选通过的bean信息缓存到injectionMetadataCache 中，表示当前加载的bean需要注入的bean属性
@@ -257,6 +271,12 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	}
 
 	/**
+	 * 获取构造器集合
+	 * 		如果有多个Autowired，required为true，不管有没有默认构造方法，会报异常
+	 * 		如果只有一个Autowired，required为false，没有默认构造方法，会报警告
+	 * 		如果没有Autowired注解，定义了两个及以上有参数的构造方法，没有无参构造方法，就会报错 ???
+	 * 		其他情况都可以，但是以有Autowired的构造方法优先，然后才是默认构造方法
+	 *
 	 * 检测出候选的构造器们（也就是我们常说的：构造器注入）
 	 * 检测Bean的构造器，可以检测出多个候选构造器，再有相应的策略决定使用哪一个。它将将自动扫描通过@Autowired/@Value注解的构造器从而可以完成构造器注入
 	 *
